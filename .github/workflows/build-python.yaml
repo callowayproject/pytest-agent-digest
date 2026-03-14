@@ -1,0 +1,72 @@
+name: Build Python Package
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: The branch, tag or SHA to checkout. Otherwise, uses the default branch.
+        required: false
+        type: string
+        default: ""
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The branch, tag or SHA to checkout. Otherwise, uses the default branch.
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+      - name: Package
+        uses: hynek/build-and-inspect-python-package@v2
+
+  call-release-github:
+    needs: build-package
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/release-github.yaml
+    with:
+      ref: ${{ inputs.ref }}
+
+#  call-release-container:
+#    needs: build-package
+#    permissions:
+#      contents: write
+#      packages: write
+#      id-token: write
+#    uses: ./.github/workflows/release-container.yaml
+#    with:
+#      ref: ${{ inputs.ref }}
+
+
+  release-pypi:
+    needs: build-package
+    permissions:
+      contents: read
+      id-token: write
+    name: Publish released package to pypi.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packages built by build-and-inspect-python-package
+        uses: actions/download-artifact@v4
+        with:
+          name: Packages
+          path: dist
+
+      - name: Upload package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+  

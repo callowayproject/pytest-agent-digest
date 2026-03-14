@@ -1,0 +1,299 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytest_llm_report"
+description = "A Pytest plugin to generate a Markdown report for AI Agents"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+keywords = ["pytest_llm_report"]
+dynamic = ["version"]
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "pytest>=7.0",
+]
+authors = [
+    { name = "Corey Oordt", email = "coreyoordt@gmail.com" },
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Homepage = "https://github.com/callowayproject/pytest-llm-report"
+Documentation = "https://callowayproject.github.io/pytest_llm_report"
+Repository = "https://github.com/callowayproject/pytest-llm-report"
+Changelog = "https://github.com/callowayproject/pytest-llm-report/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "generate-changelog",
+    "uv",
+    "bump-my-version",
+]
+test = [
+    "coverage",
+    "pytest-mock",
+    "pytest-cov",
+    "pytest",
+    "pre-commit",
+]
+docs = [
+    "mkdocs-git-committers-plugin",
+    "mkdocs>=1.4.3",
+    "mkdocs-git-revision-date-localized-plugin",
+    "mkdocs-material>=9.1.0",
+    "markdown-customblocks",
+    "mkdocs-gen-files>=0.5.0",
+    "mkdocs-click",
+    "griffe-pydantic",
+    "python-frontmatter",
+    "mkdocs-git-authors-plugin",
+    "mkdocs-literate-nav>=0.6.0",
+    "mkdocstrings[python]",
+    "mdx-truly-sane-lists",
+    "mkdocs-section-index>=0.3.5",
+    "mkdocs-include-markdown-plugin",
+]
+
+
+#[project.scripts]
+#pytest-llm-report = pytest_llm_report.cli:cli
+
+[tool.hatch.version]
+path = "pytest_llm_report/__init__.py"
+
+[tool.uv]
+default-groups = ["dev", "test", "docs"]
+
+[tool.coverage.run]
+branch = true
+omit = ["**/test_*.py", "**/__main__.py"]
+source = ["pytest_llm_report"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    # a more strict default pragma
+    "pragma: no cover",
+    "pragma: no-coverage",
+    # allow defensive code
+    "^\\s*raise AssertionError\\b",
+    "^\\s*raise NotImplementedError\\b",
+    "^\\s*return NotImplemented\\b",
+    "^\\s*raise$",
+    # typing-related code
+    "^if (False|TYPE_CHECKING):",
+    ": \\.\\.\\.(\\s*#.*)?$",
+    "^ +\\.\\.\\.$",
+    "-> ['\"]?NoReturn['\"]?:",
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=pytest_llm_report",
+    "--cov-branch",
+    "--cov-report=term",
+    "--cov-report=html",
+    "--cov-report=html",
+]
+norecursedirs = [
+    ".*",
+    "build",
+    "dist",
+    "{arch}",
+    "*.egg",
+    "venv",
+    "requirements*",
+    "lib",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py",
+    "tests.py",
+]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = false
+ignore-magic = true
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = true
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 90
+exclude = ["setup.py", "docs", "build"]
+ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+verbose = 0
+quiet = false
+whitelist-regex = []
+color = true
+
+[tool.black]
+line-length = 119
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Same as Black.
+line-length = 119
+
+[tool.ruff.lint]
+preview = true
+select = [
+    "A", # flake8-builtins
+    "ANN", # flake8-annotations
+    "B", # flake8-bugbear
+    "BLE", # flake8-blind except
+    "C4", # flake8-comprehensions
+    "C90", # McCabe complexity
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    "EXE", # flake8-executable
+    "F", # pyflakes
+    "I", # isort
+    "N", # PEP8 naming
+    "NPY", # NumPy-specific rules
+    "PD", # Pandas-vet
+    "PERF", # Perflint
+    "PGH", # PyGrep hooks
+    "PLC", # Pylint conventions
+    "PLE", # Pylint errors
+    "PLW", # Pylint warnings
+    "Q", # flake8-quotes
+    "RUF", # Ruff-specific rules
+    "S", # flake8-bandit
+    "SIM", # flake8-simplify
+    "TCH", # Flake8 type-checking
+    "W", # pycodestyle warnings
+]
+ignore = [
+    "ANN002", # missing-type-args
+    "ANN003", # missing-type-kwargs
+    "ANN204", # missing-return-type-special-method
+    "ANN401", # any-type
+    "D105", # undocumented-magic-method
+    "D106", # undocumented-public-nested-class
+    "D107", # undocumented-public-init
+    "D200", # fits-on-one-line
+    "D212", # multi-line-summary-first-line
+    "PD011", # pandas-use-of-dot-values
+    "PLC0415", # import-outside-toplevel
+    "PLW0108", # unnecessary-lambda
+    "PLW1641", # eq-without-hash
+    "S101", # assert
+    "S104", # hardcoded-bind-all-interfaces
+    "S404", # suspicious-subprocess-import
+    "S602", # subprocess-popen-with-shell-equals-true
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+typing-modules = ["typing", "types", "typing_extensions", "mypy", "mypy_extensions"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "ANN001", # missing-type-function-argument
+    "ANN002", # missing-type-args
+    "ANN003", # missing-type-kwargs
+    "ANN201", # missing-return-type-undocumented-public-function
+    "ANN202", # missing-return-type-private-function
+    "PGH003", # blanket-type-ignore
+    "PLR0912", # too-many-branches
+    "PLR0913", # too-many-arguments
+    "PLR0915", # too-many-statements
+    "PLR2004", # magic-value-comparison
+    "PLW0603", # global-statement
+    "S101", # assert
+    "S105", # hardcoded-password-string
+    "S106", # hardcoded-password-func-arg
+    "TRY003", # raise-vanilla-args
+    "TRY201", # verbose-raise
+    "TRY301", # raise-within-try
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+order-by-type = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pydoclint]
+style = "google"
+exclude = '\.git|tests'
+require-return-section-when-returning-nothing = false
+arg-type-hints-in-docstring = false
+check-return-types = false
+skip-checking-raises = true
+quiet = true
+
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = true
+commit_args = "--no-verify"
+tag = true
+tag_name = "{new_version}"
+allow_dirty = true
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(\\.(?P<dev>post)\\d+\\.dev\\d+)?"
+serialize = [
+    "{major}.{minor}.{patch}.{dev}{$PR_NUMBER}.dev{distance_to_latest_tag}",
+    "{major}.{minor}.{patch}"
+]
+message = "Version updated from {current_version} to {new_version}"
+
+[tool.bumpversion.parts.dev]
+values = ["release", "post"]
+
+[[tool.bumpversion.files]]
+filename = "pytest_llm_report/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "Unreleased"
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "{current_version}...HEAD"
+replace = "{current_version}...{new_version}"

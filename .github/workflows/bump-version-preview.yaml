@@ -1,0 +1,76 @@
+name: Display version hint
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency: version-preview-${{ github.ref }}
+
+jobs:
+  preview-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Git
+        uses: fregante/setup-git-user@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Install requirements
+        run: |
+          python -m pip install bump-my-version
+
+      - name: Get the release hint
+        id: changelog
+        uses: docker://ghcr.io/callowayproject/generate-changelog:v0
+        with:
+          branch_override: ${{ github.event.pull_request.base.ref }}
+
+      - name: Get Metadata
+        id: get-metadata
+        run: |
+          PR_NUMBER=$(gh pr view --json number -q .number || echo "${{ github.event.number }}")
+          REVISION=$(git describe --tags --long | awk -F- '{print $2}')
+          echo "RELEASE_KIND=${{ steps.changelog.outputs.release_hint }}" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "REVISION=$REVISION" >> $GITHUB_ENV
+
+      - name: Bump version dry run
+        if: ${{ env.RELEASE_KIND != 'no-release' }}
+        shell: bash
+        run: |
+          # This will display a full log of what would happen if we were to bump the version.
+          bump-my-version bump --dry-run --verbose "$RELEASE_KIND"
+
+          # This retrieves the current and new version numbers as a JSON-formatted string.
+          VERSION_INFO=$(bump-my-version show --format json --increment "$RELEASE_KIND" current_version new_version)
+          echo "CURRENT_VERSION=$(echo $VERSION_INFO | jq -r .current_version)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(echo $VERSION_INFO | jq -r .new_version)" >> $GITHUB_ENV
+
+      - name: Set no-release information
+        if: ${{ env.RELEASE_KIND == 'no-release' }}
+        run: |
+          echo "CURRENT_VERSION=$(bump-my-version show current_version)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(bump-my-version show current_version)" >> $GITHUB_ENV
+
+      - name: Display the version hint
+        uses: s-gehring/singleton-comment@v1
+        with:
+          comment-body: |
+            **Version hint:** ${{ env.RELEASE_KIND }}
+            **Current version:** ${{ env.CURRENT_VERSION }}
+            **New version (when merged):** ${{ env.NEW_VERSION }}

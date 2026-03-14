@@ -1,0 +1,50 @@
+name: Publish Preview Documentation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  publish-preview-docs:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Set up Git
+      uses: fregante/setup-git-user@v2
+
+    - name: Install dependencies
+      run: uv sync --group docs
+
+    - name: Build and publish docs
+      run: uv run mkdocs gh-deploy --strict
+
+    - name: Build and publish docs preview
+      uses: rossjrw/pr-preview-action@v1
+      with:
+        source-dir: ./site/
