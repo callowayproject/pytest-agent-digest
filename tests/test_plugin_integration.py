@@ -103,3 +103,62 @@ def test_term_mode_non_verbose_omits_passes_section(pytester: pytest.Pytester) -
     pytester.makepyfile("def test_passes(): pass")
     result = pytester.runpytest("--llm-report=term")
     assert "## Passes" not in result.stdout.str()
+
+
+# ---------------------------------------------------------------------------
+# Ticket 6 — File output mode
+# ---------------------------------------------------------------------------
+
+
+def test_file_mode_creates_default_report(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--llm-report=file creates test-results.md in cwd."""
+    pytester.makepyfile("def test_passes(): pass")
+    result = pytester.runpytest("--llm-report=file")
+    assert result.ret == 0
+    assert (pytester.path / "test-results.md").exists()
+
+
+def test_file_mode_content_matches_markdown(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """File content is valid Markdown with expected summary."""
+    pytester.makepyfile("def test_passes(): pass")
+    pytester.runpytest("--llm-report=file")
+    content = (pytester.path / "test-results.md").read_text()
+    assert "1 passed" in content
+
+
+def test_file_mode_custom_path(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--llm-report-file=out/results.md writes to that path, creating parent dirs."""
+    pytester.makepyfile("def test_passes(): pass")
+    pytester.runpytest("--llm-report=file", "--llm-report-file=out/results.md")
+    assert (pytester.path / "out" / "results.md").exists()
+
+
+def test_file_mode_overwrites_on_second_run(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """Running twice overwrites, not appends."""
+    pytester.makepyfile("def test_passes(): pass")
+    pytester.runpytest("--llm-report=file")
+    pytester.runpytest("--llm-report=file")
+    content = (pytester.path / "test-results.md").read_text()
+    assert content.count("1 passed") == 1  # not duplicated
+
+
+def test_file_mode_default_output_unchanged(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--llm-report=file alone does not suppress pytest's default output."""
+    pytester.makepyfile("def test_passes(): pass")
+    result = pytester.runpytest("--llm-report=file")
+    assert "=== test session starts ===" in result.stdout.str()
+
+
+def test_file_mode_prints_confirmation_line(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--llm-report=file prints 'LLM report written to <path>' to stdout."""
+    pytester.makepyfile("def test_passes(): pass")
+    result = pytester.runpytest("--llm-report=file")
+    assert "LLM report written to" in result.stdout.str()
+
+
+def test_file_mode_ini_option_respected(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """llm_report_file ini option sets the default output path."""
+    pytester.makeini("[pytest]\nllm_report_file = custom-report.md\n")
+    pytester.makepyfile("def test_passes(): pass")
+    pytester.runpytest("--llm-report=file")
+    assert (pytester.path / "custom-report.md").exists()

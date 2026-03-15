@@ -103,6 +103,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     Finalize the report at the end of the test session.
 
     When ``term`` mode is active, renders the Markdown report and prints it to stdout.
+    When ``file`` mode is active, writes the Markdown report to disk and prints a confirmation line.
 
     Args:
         session: The pytest session object.
@@ -110,6 +111,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     """
     config = session.config
     modes = get_output_modes(config)
+
     if "term" in modes:
         llm_plugin: LLMReportPlugin | None = config.pluginmanager.get_plugin(_PLUGIN_NAME)
         if llm_plugin is not None:
@@ -117,6 +119,17 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
             tb_style = getattr(config.option, "tbstyle", "short")
             report = render_report(llm_plugin.collector, verbose=verbose, tb_style=tb_style)
             print(report, end="")
+
+    if "file" in modes:
+        llm_plugin = config.pluginmanager.get_plugin(_PLUGIN_NAME)
+        if llm_plugin is not None:
+            verbose = bool(getattr(config.option, "verbose", 0))
+            tb_style = getattr(config.option, "tbstyle", "short")
+            report = render_report(llm_plugin.collector, verbose=verbose, tb_style=tb_style)
+            path = get_report_path(config)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(report, encoding="utf-8")
+            print(f"LLM report written to {path}")
 
 
 def get_output_modes(config: pytest.Config) -> set[str]:
