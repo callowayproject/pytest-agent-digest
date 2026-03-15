@@ -1,0 +1,162 @@
+"""Test result collector for pytest-llm-report."""
+
+import re
+from dataclasses import dataclass
+
+import pytest
+
+
+def strip_ansi(text: str) -> str:
+    """Remove ANSI escape sequences from *text*.
+
+    Args:
+        text: The string that may contain ANSI escape sequences.
+
+    Returns:
+        The input string with all ANSI color/style codes removed.
+    """
+    return re.sub(r"\x1b\[[0-9;]*m", "", text)
+
+
+@dataclass
+class TestResult:
+    """Represents a single test outcome captured during a pytest session.
+
+    Attributes:
+        node_id: The pytest node ID (e.g. ``tests/test_foo.py::test_bar``).
+        outcome: One of ``"passed"``, ``"failed"``, ``"skipped"``, ``"xfailed"``,
+            ``"xpassed"``.
+        longrepr: Formatted traceback or reason string, stripped of ANSI codes.
+            ``None`` when not applicable.
+        duration: Test duration in seconds.
+        skip_reason: Human-readable skip reason for skipped tests; ``None``
+            otherwise.
+    """
+
+    node_id: str
+    outcome: str
+    longrepr: str | None
+    duration: float
+    skip_reason: str | None
+
+
+class ReportCollector:
+    """Accumulates :class:`TestResult` objects as a pytest session runs.
+
+    Wire this into ``pytest_configure`` (instantiate) and
+    ``pytest_runtest_logreport`` (call :meth:`add`) so the renderer can
+    consume a fully-populated collector at session end.
+    """
+
+    def __init__(self) -> None:
+        """Initialise with an empty result list."""
+        self.results: list[TestResult] = []
+
+    def add(self, report: pytest.TestReport) -> None:
+        """Classify *report* and append a :class:`TestResult` if it is a call phase.
+
+        Only ``report.when == "call"`` reports are stored; setup/teardown
+        phases are ignored.
+
+        Args:
+            report: The pytest test report to classify and store.
+        """
+        if report.when != "call":
+            return
+
+        outcome = self._classify(report)
+        longrepr = self._extract_longrepr(report)
+        skip_reason = self._extract_skip_reason(report, outcome)
+
+        self.results.append(
+            TestResult(
+                node_id=report.nodeid,
+                outcome=outcome,
+                longrepr=longrepr,
+                duration=report.duration,
+                skip_reason=skip_reason,
+            )
+        )
+
+    # ------------------------------------------------------------------
+    # Properties
+    # ------------------------------------------------------------------
+
+    @property
+    def counts(self) -> dict[str, int]:
+        """Return a dict of ``{outcome: count}`` with zero-count keys omitted.
+
+        Returns:
+            Mapping from outcome string to number of results with that outcome.
+        """
+        result: dict[str, int] = {}
+        for tr in self.results:
+            result[tr.outcome] = result.get(tr.outcome, 0) + 1
+        return result
+
+    @property
+    def has_failures(self) -> bool:
+        """Return ``True`` if any result is ``"failed"`` or ``"xpassed"``.
+
+        Returns:
+            ``True`` when there is at least one failure or unexpected pass.
+        """
+        return any(tr.outcome in {"failed", "xpassed"} for tr in self.results)
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _classify(report: pytest.TestReport) -> str:
+        """Return the outcome string for *report*.
+
+        Args:
+            report: The test report to classify.
+
+        Returns:
+            One of ``"passed"``, ``"failed"``, ``"skipped"``, ``"xfailed"``,
+            ``"xpassed"``.
+        """
+        has_xfail = hasattr(report, "wasxfail")
+        if report.passed:
+            return "xpassed" if has_xfail else "passed"
+        if report.skipped:
+            return "xfailed" if has_xfail else "skipped"
+        return "failed"
+
+    @staticmethod
+    def _extract_longrepr(report: pytest.TestReport) -> str | None:
+        """Extract and ANSI-strip the longrepr from *report*.
+
+        Args:
+            report: The test report whose longrepr should be extracted.
+
+        Returns:
+            A plain-text longrepr string, or ``None`` if absent.
+        """
+        longrepr = report.longrepr
+        if longrepr is None:
+            return None
+        if isinstance(longrepr, tuple):
+            # Skipped reports store (filename, lineno, reason)
+            return strip_ansi(str(longrepr[2])) if len(longrepr) >= 3 else None
+        return strip_ansi(str(longrepr))
+
+    @staticmethod
+    def _extract_skip_reason(report: pytest.TestReport, outcome: str) -> str | None:
+        """Return the skip reason for skipped tests, else ``None``.
+
+        Args:
+            report: The test report to inspect.
+            outcome: The already-classified outcome string.
+
+        Returns:
+            The skip reason string, or ``None`` for non-skipped outcomes.
+        """
+        if outcome != "skipped":
+            return None
+        longrepr = report.longrepr
+        if isinstance(longrepr, tuple) and len(longrepr) >= 3:
+            return str(longrepr[2])
+        return str(longrepr) if longrepr is not None else None
