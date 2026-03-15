@@ -55,11 +55,29 @@ class ReportCollector:
         """
         Classify *report* and append a `TestResult` class if it is a call phase.
 
-        Only `report.when == "call"` reports are stored; setup/teardown phases are ignored.
+        ``report.when == "call"`` reports are stored for normal outcomes.
+        ``report.when == "setup"`` reports are stored only when skipped, because
+        ``@pytest.mark.skip`` raises a ``Skipped`` exception during the setup phase
+        and never produces a call-phase report.
 
         Args:
             report: The pytest test report to classify and store.
         """
+        if report.when == "setup" and report.skipped:
+            outcome = "skipped"
+            longrepr = self._extract_longrepr(report)
+            skip_reason = self._extract_skip_reason(report, outcome)
+            self.results.append(
+                TestResult(
+                    node_id=report.nodeid,
+                    outcome=outcome,
+                    longrepr=longrepr,
+                    duration=report.duration,
+                    skip_reason=skip_reason,
+                )
+            )
+            return
+
         if report.when != "call":
             return
 

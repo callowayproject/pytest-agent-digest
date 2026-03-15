@@ -162,3 +162,62 @@ def test_file_mode_ini_option_respected(pytester: pytest.Pytester) -> None:  # t
     pytester.makepyfile("def test_passes(): pass")
     pytester.runpytest("--llm-report=file")
     assert (pytester.path / "custom-report.md").exists()
+
+
+# ---------------------------------------------------------------------------
+# Ticket 7 — Additional integration tests
+# ---------------------------------------------------------------------------
+
+
+def test_tb_no_omits_traceback_block(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--tb=no suppresses the traceback code block in failure entries."""
+    pytester.makepyfile("""
+        def test_fails():
+            assert False, "intentional failure"
+    """)
+    result = pytester.runpytest("--llm-report=term", "--tb=no")
+    stdout = result.stdout.str()
+    assert "## Failures" in stdout
+    assert "```" not in stdout  # no code block when tb=no
+
+
+def test_empty_session_no_crash(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """An empty test session produces a graceful report without crashing."""
+    pytester.makepyfile("")  # no test functions
+    result = pytester.runpytest("--llm-report=term", "--collect-only")
+    assert result.ret in (0, 5)  # no crash (5 = no tests collected)
+
+
+def test_mixed_outcomes_section_order(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """Mixed outcomes: ## Failures appears before ## Skipped, ## Skipped before ## Passes."""
+    pytester.makepyfile("""
+        import pytest
+
+        def test_passes():
+            pass
+
+        def test_fails():
+            assert False, "intentional failure"
+
+        @pytest.mark.skip(reason="skipped test")
+        def test_skipped():
+            pass
+    """)
+    result = pytester.runpytest("--llm-report=term", "-v")
+    stdout = result.stdout.str()
+    failures_pos = stdout.find("## Failures")
+    skipped_pos = stdout.find("## Skipped")
+    passes_pos = stdout.find("## Passes")
+    assert failures_pos != -1
+    assert skipped_pos != -1
+    assert passes_pos != -1
+    assert failures_pos < skipped_pos < passes_pos
+
+
+def test_term_and_file_both_produce_output(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--llm-report=term --llm-report=file produces both stdout markdown and a file."""
+    pytester.makepyfile("def test_passes(): pass")
+    result = pytester.runpytest("--llm-report=term", "--llm-report=file")
+    assert result.ret == 0
+    assert "1 passed" in result.stdout.str()  # term output
+    assert (pytester.path / "test-results.md").exists()  # file output
