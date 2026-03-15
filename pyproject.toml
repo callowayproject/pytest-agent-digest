@@ -68,8 +68,8 @@ docs = [
 ]
 
 
-#[project.scripts]
-#pytest-llm-report = pytest_llm_report.cli:cli
+[project.entry-points.pytest11]
+llm_report = "pytest_llm_report"
 
 [tool.hatch.version]
 path = "pytest_llm_report/__init__.py"
