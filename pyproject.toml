@@ -45,7 +45,7 @@ dev = [
 test = [
     "coverage",
     "pytest-mock",
-    "pytest-cov",
+    "pytest-cov>6.0.0",
     "pytest",
     "pre-commit",
 ]
