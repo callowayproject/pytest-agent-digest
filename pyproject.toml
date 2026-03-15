@@ -106,7 +106,6 @@ addopts = [
     "--cov-branch",
     "--cov-report=term",
     "--cov-report=html",
-    "--cov-report=html",
 ]
 norecursedirs = [
     ".*",
@@ -142,9 +141,6 @@ verbose = 0
 quiet = false
 whitelist-regex = []
 color = true
-
-[tool.black]
-line-length = 119
 
 [tool.ruff]
 exclude = [

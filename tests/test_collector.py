@@ -6,7 +6,6 @@ import pytest
 
 from pytest_llm_report.collector import ReportCollector, TestResult, strip_ansi
 
-
 # ---------------------------------------------------------------------------
 # strip_ansi
 # ---------------------------------------------------------------------------
@@ -33,7 +32,7 @@ class TestStripAnsi:
 
     def test_empty_string(self) -> None:
         """Empty string returns empty string."""
-        assert strip_ansi("") == ""
+        assert strip_ansi("") == ""  # noqa: PLC1901
 
 
 # ---------------------------------------------------------------------------
