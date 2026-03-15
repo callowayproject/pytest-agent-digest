@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from pytest_llm_report.collector import ReportCollector
+from pytest_llm_report.renderer import render_report
 
 _PLUGIN_NAME = "llm_report_plugin"
 
@@ -61,17 +62,28 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_configure(config: pytest.Config) -> None:
     """
     Configure the pytest-llm-report plugin.
 
     Instantiates the `LLMReportPlugin` class and registers it so its hooks are active for the session.
+    When ``term`` mode is active, unregisters pytest's built-in terminal reporter so only the Markdown
+    report appears on stdout.
+
+    Marked ``trylast=True`` so that the built-in terminal reporter is already registered by the time
+    this hook runs, making it safe to unregister.
 
     Args:
         config: The pytest configuration object.
     """
     plugin = LLMReportPlugin()
     config.pluginmanager.register(plugin, _PLUGIN_NAME)
+
+    if "term" in get_output_modes(config):
+        tr = config.pluginmanager.get_plugin("terminalreporter")
+        if tr is not None:
+            config.pluginmanager.unregister(tr)
 
 
 def pytest_runtest_logreport(report: pytest.TestReport) -> None:
@@ -90,10 +102,21 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     """
     Finalize the report at the end of the test session.
 
+    When ``term`` mode is active, renders the Markdown report and prints it to stdout.
+
     Args:
         session: The pytest session object.
         exitstatus: The exit status code for the session.
     """
+    config = session.config
+    modes = get_output_modes(config)
+    if "term" in modes:
+        llm_plugin: LLMReportPlugin | None = config.pluginmanager.get_plugin(_PLUGIN_NAME)
+        if llm_plugin is not None:
+            verbose = bool(getattr(config.option, "verbose", 0))
+            tb_style = getattr(config.option, "tbstyle", "short")
+            report = render_report(llm_plugin.collector, verbose=verbose, tb_style=tb_style)
+            print(report, end="")
 
 
 def get_output_modes(config: pytest.Config) -> set[str]:
