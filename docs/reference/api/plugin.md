@@ -1,0 +1,1 @@
+::: pytest_llm_report.plugin

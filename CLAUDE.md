@@ -40,8 +40,8 @@ uv run pre-commit run --all-files      # Run all hooks manually
 
 ### Documentation
 ```bash
-uv run mkdocs serve                    # Serve docs locally
-uv run mkdocs build                    # Build docs
+uv run zensical serve                    # Serve docs locally
+uv run zensical build                    # Build docs
 ```
 
 ### Versioning
