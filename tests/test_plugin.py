@@ -23,23 +23,17 @@ def test_pytest_configure_exists() -> None:
     assert callable(plugin.pytest_configure)
 
 
-def test_pytest_runtest_logreport_exists() -> None:
-    """pytest_runtest_logreport hook stub must exist and be callable."""
-    assert callable(plugin.pytest_runtest_logreport)
-
-
 def test_pytest_sessionfinish_exists() -> None:
     """pytest_sessionfinish hook stub must exist and be callable."""
     assert callable(plugin.pytest_sessionfinish)
 
 
 def test_hooks_exposed_from_package() -> None:
-    """All four hooks must be re-exported from the top-level package."""
+    """All hooks must be re-exported from the top-level package."""
     import pytest_llm_report as pkg
 
     assert callable(pkg.pytest_addoption)
     assert callable(pkg.pytest_configure)
-    assert callable(pkg.pytest_runtest_logreport)
     assert callable(pkg.pytest_sessionfinish)
 
 

@@ -10,7 +10,7 @@ _STATUS_LABEL: dict[str, str] = {
 }
 
 
-def render_report(collector: ReportCollector, verbose: bool, tb_style: str) -> str:
+def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> str:
     """
     Render a Markdown report from a populated collector.
 

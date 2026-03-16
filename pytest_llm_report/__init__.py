@@ -10,7 +10,6 @@ from pytest_llm_report.plugin import (
     get_report_path,
     pytest_addoption,
     pytest_configure,
-    pytest_runtest_logreport,
     pytest_sessionfinish,
 )
 
@@ -22,6 +21,5 @@ __all__ = [
     "get_report_path",
     "pytest_addoption",
     "pytest_configure",
-    "pytest_runtest_logreport",
     "pytest_sessionfinish",
 ]

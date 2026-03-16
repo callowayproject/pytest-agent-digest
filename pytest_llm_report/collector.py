@@ -1,6 +1,7 @@
 """Test result collector for pytest-llm-report."""
 
 import re
+from collections import Counter
 from dataclasses import dataclass
 
 import pytest
@@ -107,10 +108,7 @@ class ReportCollector:
         Returns:
             Mapping from the outcome string to the number of results with that outcome.
         """
-        result: dict[str, int] = {}
-        for tr in self.results:
-            result[tr.outcome] = result.get(tr.outcome, 0) + 1
-        return result
+        return dict(Counter(tr.outcome for tr in self.results))
 
     @property
     def has_failures(self) -> bool:
@@ -160,7 +158,7 @@ class ReportCollector:
             return None
         if isinstance(longrepr, tuple):
             # Skipped reports store (filename, lineno, reason)
-            return strip_ansi(str(longrepr[2])) if len(longrepr) >= 3 else None
+            return strip_ansi(str(longrepr[2]))
         return strip_ansi(str(longrepr))
 
     @staticmethod
@@ -178,6 +176,6 @@ class ReportCollector:
         if outcome != "skipped":
             return None
         longrepr = report.longrepr
-        if isinstance(longrepr, tuple) and len(longrepr) >= 3:
-            return str(longrepr[2])
-        return str(longrepr) if longrepr is not None else None
+        if isinstance(longrepr, tuple):
+            return strip_ansi(str(longrepr[2]))
+        return strip_ansi(str(longrepr)) if longrepr is not None else None

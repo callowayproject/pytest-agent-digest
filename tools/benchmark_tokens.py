@@ -9,13 +9,14 @@ Requires ANTHROPIC_API_KEY environment variable.
 """
 
 import subprocess
+import sys
 import tempfile
 import textwrap
 from pathlib import Path
 
 import anthropic
 
-_MODEL = "claude-3-haiku-20240307"
+_MODEL = "claude-haiku-4-5-20251001"
 
 _SAMPLE_TEST_FILE = textwrap.dedent("""\
     def test_addition():
@@ -46,7 +47,7 @@ def run_pytest(extra_args: list[str], cwd: Path) -> str:
         Combined stdout and stderr as a single string.
     """
     result = subprocess.run(
-        ["python", "-m", "pytest", *extra_args],
+        [sys.executable, "-m", "pytest", *extra_args],
         cwd=cwd,
         capture_output=True,
         text=True,
