@@ -1,1 +1,1 @@
-::: pytest_llm_report.collector
+::: pytest_agent_digest.collector

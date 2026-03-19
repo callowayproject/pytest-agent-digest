@@ -3,19 +3,24 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pytest_llm_report"
+name = "pytest-agent-digest"
 description = "A Pytest plugin to generate a Markdown report for AI Agents"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Natural Language :: English",
+    "Environment :: Plugins",
+    "Framework :: Pytest",
+    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Testing",
 ]
-keywords = ["pytest_llm_report"]
+keywords = ["pytest", "agent", "AI", "LLM", "report"]
 dynamic = ["version"]
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
@@ -31,10 +36,10 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.urls]
-Homepage = "https://github.com/callowayproject/pytest-llm-report"
-Documentation = "https://callowayproject.github.io/pytest_llm_report"
-Repository = "https://github.com/callowayproject/pytest-llm-report"
-Changelog = "https://github.com/callowayproject/pytest-llm-report/CHANGELOG.md"
+Homepage = "https://github.com/callowayproject/pytest-agent-digest"
+Documentation = "https://callowayproject.github.io/pytest-agent-digest"
+Repository = "https://github.com/callowayproject/pytest-agent-digest"
+Changelog = "https://github.com/callowayproject/pytest-agent-digest/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
@@ -71,10 +76,10 @@ docs = [
 
 
 [project.entry-points.pytest11]
-llm_report = "pytest_llm_report"
+agent_digest = "pytest_agent_digest"
 
 [tool.hatch.version]
-path = "pytest_llm_report/__init__.py"
+path = "pytest_agent_digest/__init__.py"
 
 [tool.uv]
 default-groups = ["dev", "test", "docs"]
@@ -82,7 +87,7 @@ default-groups = ["dev", "test", "docs"]
 [tool.coverage.run]
 branch = true
 omit = ["**/test_*.py", "**/__main__.py"]
-source = ["pytest_llm_report"]
+source = ["pytest_agent_digest"]
 
 [tool.coverage.report]
 show_missing = true
@@ -104,7 +109,7 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 addopts = [
-    "--cov=pytest_llm_report",
+    "--cov=pytest_agent_digest",
     "--cov-branch",
     "--cov-report=term",
     "--cov-report=html",
@@ -285,7 +290,7 @@ message = "Version updated from {current_version} to {new_version}"
 values = ["release", "post"]
 
 [[tool.bumpversion.files]]
-filename = "pytest_llm_report/__init__.py"
+filename = "pytest_agent_digest/__init__.py"
 
 [[tool.bumpversion.files]]
 filename = "CHANGELOG.md"

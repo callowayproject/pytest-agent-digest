@@ -2,7 +2,7 @@
 
 # User variables for reference in other parts of the configuration.
 variables:
-  repo_url: https://github.com/callowayproject/pytest-llm-report
+  repo_url: https://github.com/callowayproject/pytest-agent-digest
   changelog_filename: CHANGELOG.md
 
 # Pipeline to find the most recent tag for incremental changelog generation.

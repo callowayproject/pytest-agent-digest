@@ -109,8 +109,8 @@ def main() -> None:
         print("Running normal pytest...")
         normal_output = run_pytest(["test_sample.py", "-v"], tmp_path)
 
-        print("Running pytest with --llm-report=term...")
-        llm_output = run_pytest(["test_sample.py", "--llm-report=term"], tmp_path)
+        print("Running pytest with --agent-digest=term...")
+        llm_output = run_pytest(["test_sample.py", "--agent-digest=term"], tmp_path)
 
     print("Counting tokens via Anthropic API...")
     normal_tokens = count_tokens(normal_output)

@@ -31,9 +31,9 @@ LLM-based TDD agents running pytest receive console output filled with ANSI esca
 
 ### Developer / Human Using the Plugin
 
-- As a developer, I want to pass `--llm-report=file` to write a Markdown report without losing normal console output so that I can inspect what an agent will receive while still seeing my usual test feedback.
-- As a developer, I want to pass `--llm-report=term` to replace console output with Markdown so that I can verify the report format looks correct.
-- As a developer, I want to use both `--llm-report=term` and `--llm-report=file` in the same run so that I can see the Markdown output and capture it.
+- As a developer, I want to pass `--agent-digest=file` to write a Markdown report without losing normal console output so that I can inspect what an agent will receive while still seeing my usual test feedback.
+- As a developer, I want to pass `--agent-digest=term` to replace console output with Markdown so that I can verify the report format looks correct.
+- As a developer, I want to use both `--agent-digest=term` and `--agent-digest=file` in the same run so that I can see the Markdown output and capture it.
 - As a developer, I want to configure the output filename in `pyproject.toml` so that I don't have to pass it on every invocation.
 - As a developer, I want the plugin to respect `-v` and `--tb` flags so that I don't need to learn a new set of options.
 
@@ -41,13 +41,13 @@ LLM-based TDD agents running pytest receive console output filled with ANSI esca
 
 ### Must-Have (P0)
 
-**`--llm-report` CLI flag accepting `term` and/or `file` values**
-- `--llm-report=term`: replaces pytest's default terminal output with Markdown-formatted output
-- `--llm-report=file`: writes Markdown report to a file; default console output is unaffected
-- Both flags may be used in the same invocation: `--llm-report=term --llm-report=file`
+**`--agent-digest` CLI flag accepting `term` and/or `file` values**
+- `--agent-digest=term`: replaces pytest's default terminal output with Markdown-formatted output
+- `--agent-digest=file`: writes Markdown report to a file; default console output is unaffected
+- Both flags may be used in the same invocation: `--agent-digest=term --agent-digest=file`
 - Acceptance criteria:
-  - Given `--llm-report=term`, when the test session ends, the terminal shows Markdown output and no default pytest console output
-  - Given `--llm-report=file`, when the test session ends, a `.md` file is written and the default pytest console output is unchanged
+  - Given `--agent-digest=term`, when the test session ends, the terminal shows Markdown output and no default pytest console output
+  - Given `--agent-digest=file`, when the test session ends, a `.md` file is written and the default pytest console output is unchanged
   - Given both flags, both behaviors occur
 
 **Token-efficient Markdown formatting**
@@ -76,15 +76,15 @@ LLM-based TDD agents running pytest receive console output filled with ANSI esca
   - Given 3 passed and 1 failed with no skipped or xfail, summary reads `3 passed, 1 failed`
 
 **Default filename**
-- When `--llm-report=file` is used without `--llm-report-file`, output file is `test-results.md` in the current working directory
+- When `--agent-digest=file` is used without `--agent-digest-file`, output file is `test-results.md` in the current working directory
 - Acceptance criteria:
-  - Given `--llm-report=file` with no filename option, `test-results.md` is created in cwd
+  - Given `--agent-digest=file` with no filename option, `test-results.md` is created in cwd
 
-**`--llm-report-file` CLI option and `llm_report_file` ini option**
+**`--agent-digest-file` CLI option and `llm_report_file` ini option**
 - Sets the path/name of the output file
 - Configurable in `pyproject.toml` under `[tool.pytest.ini_options]`
 - Acceptance criteria:
-  - Given `--llm-report-file=output/results.md`, the report is written to that path
+  - Given `--agent-digest-file=output/results.md`, the report is written to that path
   - Given `llm_report_file = "output/results.md"` in `pyproject.toml`, the report is written to that path without a CLI flag
 
 **Respect `-v` and `--tb` flags**
@@ -101,7 +101,7 @@ LLM-based TDD agents running pytest receive console output filled with ANSI esca
 - Include elapsed time for each test entry (especially failures) to help agents identify slow tests
 - Format: `**Duration:** 0.42s`
 
-**`--llm-report=both` shorthand**
+**`--agent-digest=both` shorthand**
 - Single value that activates both `term` and `file` modes without requiring two flags
 
 **Warning section**
@@ -138,10 +138,10 @@ LLM-based TDD agents running pytest receive console output filled with ANSI esca
 
 | Question | Owner | Blocking? |
 |----------|-------|-----------|
-| Should `--llm-report=term` suppress all pytest plugins' terminal output (e.g., pytest-cov summary), or only pytest's own reporter? | Engineering | Yes — affects plugin hook implementation |
+| Should `--agent-digest=term` suppress all pytest plugins' terminal output (e.g., pytest-cov summary), or only pytest's own reporter? | Engineering | Yes — affects plugin hook implementation |
 | When both `term` and `file` are active, are they guaranteed to produce identical content, or can they differ (e.g., file gets more detail)? | Product | No — can decide during implementation |
 | Should the output file be overwritten on each run, or appended? | Product | No — default to overwrite; append can be P1 |
-| Does `--llm-report=term` need to print anything for a completely empty test session (no tests collected)? | Engineering | No |
+| Does `--agent-digest=term` need to print anything for a completely empty test session (no tests collected)? | Engineering | No |
 
 ## Timeline Considerations
 

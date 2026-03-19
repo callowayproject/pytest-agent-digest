@@ -1,21 +1,21 @@
-"""pytest plugin hooks for pytest-llm-report."""
+"""pytest plugin hooks for pytest-agent-digest."""
 
 from pathlib import Path
 
 import pytest
 
-from pytest_llm_report.collector import ReportCollector
-from pytest_llm_report.renderer import render_report
+from pytest_agent_digest.collector import ReportCollector
+from pytest_agent_digest.renderer import render_report
 
-_PLUGIN_NAME = "llm_report_plugin"
+_PLUGIN_NAME = "agent_digest_plugin"
 
 
-class LLMReportPlugin:
+class AgentDigestPlugin:
     """
     Internal plugin class that holds the per-session state.
 
     Registered by `pytest_configure` so that `pytest_runtest_logreport` can access the shared
-    `~pytest_llm_report.collector.ReportCollector` without a global.
+    `~pytest_agent_digest.collector.ReportCollector` without a global.
     """
 
     def __init__(self) -> None:
@@ -34,42 +34,42 @@ class LLMReportPlugin:
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     """
-    Register pytest-llm-report command-line options.
+    Register pytest-agent-digest command-line options.
 
     Args:
         parser: The pytest argument parser.
     """
     parser.addoption(
-        "--llm-report",
+        "--agent-digest",
         action="append",
         choices=["term", "file"],
         default=None,
         help=(
-            "Generate LLM-friendly Markdown report. Use 'term' for stdout, "
+            "Generate Agent-friendly Markdown digest. Use 'term' for stdout, "
             "'file' for file output. Can be passed twice."
         )
     )
     parser.addoption(
-        "--llm-report-file",
+        "--agent-digest-file",
         action="store",
         default=None,
-        help="Path for the Markdown report file (default: test-results.md).",
+        help="Path for the Markdown digest file (default: test-results.md).",
     )
     parser.addini(
-        "llm_report_file",
+        "agent_digest_file",
         default="test-results.md",
-        help="Default path for the LLM report file.",
+        help="Default path for the Agent digest file.",
     )
 
 
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config: pytest.Config) -> None:
     """
-    Configure the pytest-llm-report plugin.
+    Configure the pytest-agent-digest plugin.
 
-    Instantiates the `LLMReportPlugin` class and registers it so its hooks are active for the session.
+    Instantiates the `AgentDigestPlugin` class and registers it so its hooks are active for the session.
     When ``term`` mode is active, unregisters pytest's built-in terminal reporter so only the Markdown
-    report appears on stdout.
+    digest appears on stdout.
 
     Marked ``trylast=True`` so that the built-in terminal reporter is already registered by the time
     this hook runs, making it safe to unregister.
@@ -77,7 +77,7 @@ def pytest_configure(config: pytest.Config) -> None:
     Args:
         config: The pytest configuration object.
     """
-    plugin = LLMReportPlugin()
+    plugin = AgentDigestPlugin()
     config.pluginmanager.register(plugin, _PLUGIN_NAME)
 
     if "term" in get_output_modes(config):
@@ -88,10 +88,10 @@ def pytest_configure(config: pytest.Config) -> None:
 
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     """
-    Finalize the report at the end of the test session.
+    Finalize the digest at the end of the test session.
 
-    When ``term`` mode is active, renders the Markdown report and prints it to stdout.
-    When ``file`` mode is active, writes the Markdown report to disk and prints a confirmation line.
+    When ``term`` mode is active, renders the Markdown digest and prints it to stdout.
+    When ``file`` mode is active, writes the Markdown digest to disk and prints a confirmation line.
     Both modes may be active simultaneously.
 
     Args:
@@ -103,13 +103,13 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     if not modes:
         return
 
-    llm_plugin: LLMReportPlugin | None = config.pluginmanager.get_plugin(_PLUGIN_NAME)
-    if llm_plugin is None:
+    agent_plugin: AgentDigestPlugin | None = config.pluginmanager.get_plugin(_PLUGIN_NAME)
+    if agent_plugin is None:
         return
 
     verbose = getattr(config.option, "verbose", 0)
     tb_style = getattr(config.option, "tbstyle", "short")
-    report = render_report(llm_plugin.collector, verbose=verbose, tb_style=tb_style)
+    report = render_report(agent_plugin.collector, verbose=verbose, tb_style=tb_style)
 
     if "term" in modes:
         print(report, end="")
@@ -118,12 +118,12 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
         path = get_report_path(config)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(report, encoding="utf-8")
-        print(f"LLM report written to {path}")
+        print(f"Agent digest written to {path}")
 
 
 def get_output_modes(config: pytest.Config) -> set[str]:
     """
-    Return the set of output modes requested via --llm-report.
+    Return the set of output modes requested via --agent-digest.
 
     Args:
         config: The pytest configuration object.
@@ -131,7 +131,7 @@ def get_output_modes(config: pytest.Config) -> set[str]:
     Returns:
         A set of mode strings (`"term"`, `"file"`), or an empty set if the flag was not passed.
     """
-    modes = config.getoption("--llm-report", default=None)
+    modes = config.getoption("--agent-digest", default=None)
     if not modes:
         return set()
     return set(modes)
@@ -139,12 +139,12 @@ def get_output_modes(config: pytest.Config) -> set[str]:
 
 def get_report_path(config: pytest.Config) -> Path:
     """
-    Return the output path for the Markdown report file.
+    Return the output path for the Markdown digest file.
 
     Resolution order:
 
-    1. `--llm-report-file` CLI flag
-    2. `llm_report_file` ini option
+    1. `--agent-digest-file` CLI flag
+    2. `agent_digest_file` ini option
     3. Hard-coded default `test-results.md`
 
     Args:
@@ -153,7 +153,7 @@ def get_report_path(config: pytest.Config) -> Path:
     Returns:
         A `pathlib.Path` pointing to the desired report file location.
     """
-    cli_value = config.getoption("--llm-report-file", default=None)
+    cli_value = config.getoption("--agent-digest-file", default=None)
     if cli_value is not None:
         return Path(cli_value)
-    return Path(config.getini("llm_report_file"))
+    return Path(config.getini("agent_digest_file"))

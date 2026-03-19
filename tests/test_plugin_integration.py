@@ -9,31 +9,31 @@ import pytest
 # ---------------------------------------------------------------------------
 
 
-def test_llm_report_term_collection(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term exits 0 during collection."""
+def test_agent_digest_term_collection(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--agent-digest=term exits 0 during collection."""
     pytester.makepyfile("def test_dummy(): pass")
-    result = pytester.runpytest("--llm-report=term", "--co", "-q")
+    result = pytester.runpytest("--agent-digest=term", "--co", "-q")
     assert result.ret == 0
 
 
-def test_llm_report_file_collection(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=file exits 0 during collection."""
+def test_agent_digest_file_collection(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--agent-digest=file exits 0 during collection."""
     pytester.makepyfile("def test_dummy(): pass")
-    result = pytester.runpytest("--llm-report=file", "--co", "-q")
+    result = pytester.runpytest("--agent-digest=file", "--co", "-q")
     assert result.ret == 0
 
 
-def test_llm_report_both_collection(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term --llm-report=file exits 0 during collection."""
+def test_agent_digest_both_collection(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--agent-digest=term --agent-digest=file exits 0 during collection."""
     pytester.makepyfile("def test_dummy(): pass")
-    result = pytester.runpytest("--llm-report=term", "--llm-report=file", "--co", "-q")
+    result = pytester.runpytest("--agent-digest=term", "--agent-digest=file", "--co", "-q")
     assert result.ret == 0
 
 
-def test_llm_report_invalid_value(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=bad exits non-zero (invalid choice)."""
+def test_agent_digest_invalid_value(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """--agent-digest=bad exits non-zero (invalid choice)."""
     pytester.makepyfile("def test_dummy(): pass")
-    result = pytester.runpytest("--llm-report=bad", "--co", "-q")
+    result = pytester.runpytest("--agent-digest=bad", "--co", "-q")
     assert result.ret != 0
 
 
@@ -43,65 +43,65 @@ def test_llm_report_invalid_value(pytester: pytest.Pytester) -> None:  # type: i
 
 
 def test_term_mode_prints_markdown_summary(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term prints a Markdown summary line to stdout."""
+    """--agent-digest=term prints a Markdown summary line to stdout."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=term")
+    result = pytester.runpytest("--agent-digest=term")
     assert result.ret == 0
     assert "1 passed" in result.stdout.str()
 
 
 def test_term_mode_suppresses_default_reporter(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term suppresses pytest's default session header from stdout."""
+    """--agent-digest=term suppresses pytest's default session header from stdout."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=term")
+    result = pytester.runpytest("--agent-digest=term")
     assert "=== test session starts ===" not in result.stdout.str()
 
 
 def test_without_term_mode_default_output_is_unchanged(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """Without --llm-report=term, pytest's default terminal output is present."""
+    """Without --agent-digest=term, pytest's default terminal output is present."""
     pytester.makepyfile("def test_passes(): pass")
     result = pytester.runpytest()
     assert "=== test session starts ===" in result.stdout.str()
 
 
 def test_term_mode_includes_failures_section(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term includes a ## Failures section when tests fail."""
+    """--agent-digest=term includes a ## Failures section when tests fail."""
     pytester.makepyfile("""
         def test_fails():
             assert False, "intentional failure"
     """)
-    result = pytester.runpytest("--llm-report=term")
+    result = pytester.runpytest("--agent-digest=term")
     assert "## Failures" in result.stdout.str()
 
 
 def test_term_and_file_modes_together(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term --llm-report=file both activate without error."""
+    """--agent-digest=term --agent-digest=file both activate without error."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=term", "--llm-report=file")
+    result = pytester.runpytest("--agent-digest=term", "--agent-digest=file")
     assert result.ret == 0
 
 
 def test_term_mode_output_has_no_ansi_codes(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term output contains no ANSI escape sequences."""
+    """--agent-digest=term output contains no ANSI escape sequences."""
     pytester.makepyfile("""
         def test_fails():
             assert False, "intentional failure"
     """)
-    result = pytester.runpytest("--llm-report=term")
+    result = pytester.runpytest("--agent-digest=term")
     assert not re.search(r"\x1b\[[0-9;]*m", result.stdout.str())
 
 
 def test_term_mode_verbose_includes_passes_section(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term -v includes a ## Passes section for passing tests."""
+    """--agent-digest=term -v includes a ## Passes section for passing tests."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=term", "-v")
+    result = pytester.runpytest("--agent-digest=term", "-v")
     assert "## Passes" in result.stdout.str()
 
 
 def test_term_mode_non_verbose_omits_passes_section(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term without -v omits the ## Passes section."""
+    """--agent-digest=term without -v omits the ## Passes section."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=term")
+    result = pytester.runpytest("--agent-digest=term")
     assert "## Passes" not in result.stdout.str()
 
 
@@ -111,9 +111,9 @@ def test_term_mode_non_verbose_omits_passes_section(pytester: pytest.Pytester) -
 
 
 def test_file_mode_creates_default_report(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=file creates test-results.md in cwd."""
+    """--agent-digest=file creates test-results.md in cwd."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=file")
+    result = pytester.runpytest("--agent-digest=file")
     assert result.ret == 0
     assert (pytester.path / "test-results.md").exists()
 
@@ -121,46 +121,46 @@ def test_file_mode_creates_default_report(pytester: pytest.Pytester) -> None:  #
 def test_file_mode_content_matches_markdown(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
     """File content is valid Markdown with expected summary."""
     pytester.makepyfile("def test_passes(): pass")
-    pytester.runpytest("--llm-report=file")
+    pytester.runpytest("--agent-digest=file")
     content = (pytester.path / "test-results.md").read_text()
     assert "1 passed" in content
 
 
 def test_file_mode_custom_path(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report-file=out/results.md writes to that path, creating parent dirs."""
+    """--agent-digest-file=out/results.md writes to that path, creating parent dirs."""
     pytester.makepyfile("def test_passes(): pass")
-    pytester.runpytest("--llm-report=file", "--llm-report-file=out/results.md")
+    pytester.runpytest("--agent-digest=file", "--agent-digest-file=out/results.md")
     assert (pytester.path / "out" / "results.md").exists()
 
 
 def test_file_mode_overwrites_on_second_run(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
     """Running twice overwrites, not appends."""
     pytester.makepyfile("def test_passes(): pass")
-    pytester.runpytest("--llm-report=file")
-    pytester.runpytest("--llm-report=file")
+    pytester.runpytest("--agent-digest=file")
+    pytester.runpytest("--agent-digest=file")
     content = (pytester.path / "test-results.md").read_text()
     assert content.count("1 passed") == 1  # not duplicated
 
 
 def test_file_mode_default_output_unchanged(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=file alone does not suppress pytest's default output."""
+    """--agent-digest=file alone does not suppress pytest's default output."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=file")
+    result = pytester.runpytest("--agent-digest=file")
     assert "=== test session starts ===" in result.stdout.str()
 
 
 def test_file_mode_prints_confirmation_line(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=file prints 'LLM report written to <path>' to stdout."""
+    """--agent-digest=file prints 'Agent digest written to <path>' to stdout."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=file")
-    assert "LLM report written to" in result.stdout.str()
+    result = pytester.runpytest("--agent-digest=file")
+    assert "Agent digest written to" in result.stdout.str()
 
 
 def test_file_mode_ini_option_respected(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """llm_report_file ini option sets the default output path."""
-    pytester.makeini("[pytest]\nllm_report_file = custom-report.md\n")
+    """agent_digest_file ini option sets the default output path."""
+    pytester.makeini("[pytest]\nagent_digest_file = custom-report.md\n")
     pytester.makepyfile("def test_passes(): pass")
-    pytester.runpytest("--llm-report=file")
+    pytester.runpytest("--agent-digest=file")
     assert (pytester.path / "custom-report.md").exists()
 
 
@@ -175,7 +175,7 @@ def test_tb_no_omits_traceback_block(pytester: pytest.Pytester) -> None:  # type
         def test_fails():
             assert False, "intentional failure"
     """)
-    result = pytester.runpytest("--llm-report=term", "--tb=no")
+    result = pytester.runpytest("--agent-digest=term", "--tb=no")
     stdout = result.stdout.str()
     assert "## Failures" in stdout
     assert "```" not in stdout  # no code block when tb=no
@@ -184,7 +184,7 @@ def test_tb_no_omits_traceback_block(pytester: pytest.Pytester) -> None:  # type
 def test_empty_session_no_crash(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
     """An empty test session produces a graceful report without crashing."""
     pytester.makepyfile("")  # no test functions
-    result = pytester.runpytest("--llm-report=term", "--collect-only")
+    result = pytester.runpytest("--agent-digest=term", "--collect-only")
     assert result.ret in (0, 5)  # no crash (5 = no tests collected)
 
 
@@ -203,7 +203,7 @@ def test_mixed_outcomes_section_order(pytester: pytest.Pytester) -> None:  # typ
         def test_skipped():
             pass
     """)
-    result = pytester.runpytest("--llm-report=term", "-v")
+    result = pytester.runpytest("--agent-digest=term", "-v")
     stdout = result.stdout.str()
     failures_pos = stdout.find("## Failures")
     skipped_pos = stdout.find("## Skipped")
@@ -215,9 +215,9 @@ def test_mixed_outcomes_section_order(pytester: pytest.Pytester) -> None:  # typ
 
 
 def test_term_and_file_both_produce_output(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
-    """--llm-report=term --llm-report=file produces both stdout markdown and a file."""
+    """--agent-digest=term --agent-digest=file produces both stdout markdown and a file."""
     pytester.makepyfile("def test_passes(): pass")
-    result = pytester.runpytest("--llm-report=term", "--llm-report=file")
+    result = pytester.runpytest("--agent-digest=term", "--agent-digest=file")
     assert result.ret == 0
     assert "1 passed" in result.stdout.str()  # term output
     assert (pytester.path / "test-results.md").exists()  # file output

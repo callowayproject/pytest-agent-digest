@@ -1,4 +1,4 @@
-"""Test result collector for pytest-llm-report."""
+"""Test result collector for pytest-agent-digest."""
 
 import re
 from collections import Counter

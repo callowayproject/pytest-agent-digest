@@ -1,1 +1,1 @@
-::: pytest_llm_report.renderer
+::: pytest_agent_digest.renderer

@@ -1,4 +1,4 @@
-# Contributing to Pytest LLM Report
+# Contributing to Pytest Agent Digest
 
 First off, thanks for taking the time to contribute!
 
@@ -30,7 +30,7 @@ The community looks forward to your contributions.
 
 ## Code of Conduct
 
-This project and everyone participating is governed by the [Pytest LLM Report Code of Conduct](../CODE_OF_CONDUCT.md).
+This project and everyone participating is governed by the [Pytest Agent Digest Code of Conduct](../CODE_OF_CONDUCT.md).
 
 By participating, you are expected to uphold this code. Please report unacceptable behavior to coreyoordt@gmail.com.
 
@@ -87,7 +87,7 @@ Once it's filed:
 
 ## Suggesting Enhancements
 
-This section guides you through submitting an enhancement suggestion for Pytest LLM Report, including entirely new features and minor improvements to existing functionality. Following these guidelines will help maintainers and the community understand your suggestions and find related suggestions.
+This section guides you through submitting an enhancement suggestion for Pytest Agent Digest, including entirely new features and minor improvements to existing functionality. Following these guidelines will help maintainers and the community understand your suggestions and find related suggestions.
 
 ### Before Submitting an Enhancement
 
@@ -122,9 +122,9 @@ There are several ways to create an isolated environment. The recommended way is
 Run the following in a terminal:
 
 ```console
-$ git clone https://github.com/callowayproject/pytest-llm-report.git
+$ git clone https://github.com/callowayproject/pytest-agent-digest.git
 
-$ cd pytest-llm-report
+$ cd pytest-agent-digest
 
 $ uv sync
 ```
@@ -145,6 +145,6 @@ Pre-commit hooks are scripts that run every time you make a commit. If any of th
 $ pre-commit install
 ```
 
-[documentation]: https://callowayproject.github.io/pytest-llm-report/
-[new_issue]: https://github.com/callowayproject/pytest-llm-report/issues/new
-[issues]: https://github.com/callowayproject/pytest-llm-report/issues
+[documentation]: https://callowayproject.github.io/pytest-agent-digest/
+[new_issue]: https://github.com/callowayproject/pytest-agent-digest/issues/new
+[issues]: https://github.com/callowayproject/pytest-agent-digest/issues

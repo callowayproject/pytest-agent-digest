@@ -1,6 +1,6 @@
 [project]
-site_name = "Pytest LLM Report"
-repo_url = "https://github.com/callowayproject/pytest-llm-report"
+site_name = "Pytest Agent Digest"
+repo_url = "https://github.com/callowayproject/pytest-digest-report"
 edit_uri = "edit/main/docs/"
 use_directory_urls = true
 extra_javascript = [
@@ -15,7 +15,7 @@ extra_css = [
 
 [project.theme]
 favicon = "assets/favicon.png"
-logo = "assets/logo.png"
+logo = "assets/images/agent-digest-logo.svg"
 features = [
     "navigation.sections",
     "navigation.path",
@@ -80,7 +80,7 @@ permalink = true
 
 [project.plugins.mkdocstrings.handlers.python]
 inventories = ["https://docs.python.org/3/objects.inv"]
-paths = ["pytest_llm_report"]
+paths = ["pytest_agent_digest"]
 
 [project.plugins.mkdocstrings.handlers.python.options]
 docstring_style = "google"

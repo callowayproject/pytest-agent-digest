@@ -2,8 +2,8 @@
 
 import pytest
 
-from pytest_llm_report.collector import ReportCollector, TestResult, strip_ansi
-from pytest_llm_report.renderer import render_report
+from pytest_agent_digest.collector import ReportCollector, TestResult, strip_ansi
+from pytest_agent_digest.renderer import render_report
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -63,7 +63,7 @@ class TestSummaryLine:
     def test_no_tests_produces_empty_summary_line(self) -> None:
         """An empty collector renders a blank summary line."""
         result = render_report(_make_collector(), verbose=False, tb_style="short")
-        assert result.splitlines()[0] == ""
+        assert result.splitlines()[0] == ""  # noqa: PLC1901
 
     def test_all_passed_summary(self) -> None:
         """Two passed results produce '2 passed' summary."""

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pytest_llm_report.collector import ReportCollector, TestResult, strip_ansi
+from pytest_agent_digest.collector import ReportCollector, TestResult, strip_ansi
 
 # ---------------------------------------------------------------------------
 # strip_ansi

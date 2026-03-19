@@ -1,6 +1,6 @@
-"""Markdown renderer for pytest-llm-report."""
+"""Markdown renderer for pytest-agent-digest."""
 
-from pytest_llm_report.collector import ReportCollector, TestResult
+from pytest_agent_digest.collector import ReportCollector, TestResult
 
 _OUTCOME_ORDER = ["passed", "failed", "skipped", "xfailed", "xpassed"]
 
@@ -21,7 +21,7 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
             code blocks are omitted from failure entries.
 
     Returns:
-        A Markdown string suitable for LLM consumption.  The document always
+        A Markdown string suitable for Agent consumption.  The document always
         ends with a newline and contains no ANSI escape sequences.
     """
     sections: list[str] = []
@@ -88,7 +88,6 @@ def _failure_entry_lines(result: TestResult, tb_style: str) -> list[str]:
     if tb_style != "no" and result.longrepr:
         lines.append("")
         lines.append("```")
-        for tb_line in result.longrepr.splitlines():
-            lines.append(tb_line.rstrip())
+        lines.extend(tb_line.rstrip() for tb_line in result.longrepr.splitlines())
         lines.append("```")
     return lines

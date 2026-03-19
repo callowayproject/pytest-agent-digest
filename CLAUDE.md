@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`pytest-llm-report` is a pytest plugin (in early development) that generates Markdown reports for AI agents. The plugin hooks into pytest to capture test results and produce structured Markdown output suitable for LLM consumption.
+`pytest-agent-digest` is a pytest plugin (in early development) that generates Markdown reports for AI agents. The plugin hooks into pytest to capture test results and produce structured Markdown output suitable for AI agent consumption.
 
 ## Package Manager
 
@@ -28,8 +28,8 @@ uv run pytest -x                       # Stop on first failure
 uv run ruff check .                    # Lint
 uv run ruff check --fix .              # Lint with auto-fix
 uv run ruff format .                   # Format code
-uv run mypy pytest_llm_report/         # Type checking
-uv run interrogate pytest_llm_report/  # Check docstring coverage (must be ≥90%)
+uv run mypy pytest_agent_digest/         # Type checking
+uv run interrogate pytest_agent_digest/  # Check docstring coverage (must be ≥90%)
 ```
 
 ### Pre-commit Hooks
@@ -62,10 +62,10 @@ uv run bump-my-version bump minor      # Bump minor version
 
 The plugin is in early scaffold phase. The intended architecture for a pytest plugin:
 
-- **`pytest_llm_report/__init__.py`** — Package version; pytest plugin entry point will be registered via `project.entry-points."pytest11"` in `pyproject.toml` when implemented
+- **`pytest_agent_digest/__init__.py`** — Package version; pytest plugin entry point will be registered via `project.entry-points."pytest11"` in `pyproject.toml` when implemented
 - Plugin hooks (`pytest_configure`, `pytest_runtest_logreport`, `pytest_sessionfinish`, etc.) should be implemented here or in a dedicated `plugin.py` module
 - The plugin captures test outcomes, metadata, and generates a Markdown report at session end
 
 ## Version Management
 
-Version is stored in `pytest_llm_report/__init__.py` as `__version__` and managed by `bump-my-version`. The `CHANGELOG.md` is updated automatically during version bumps.
+Version is stored in `pytest_agent_digest/__init__.py` as `__version__` and managed by `bump-my-version`. The `CHANGELOG.md` is updated automatically during version bumps.
