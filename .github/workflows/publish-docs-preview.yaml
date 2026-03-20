@@ -42,7 +42,7 @@ jobs:
       run: uv sync --group docs
 
     - name: Build and publish docs
-      run: uv run mkdocs gh-deploy --strict
+      run: uv run zensical build --strict --clean
 
     - name: Build and publish docs preview
       uses: rossjrw/pr-preview-action@v1
