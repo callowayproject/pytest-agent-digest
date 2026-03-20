@@ -24,17 +24,16 @@ def test_pytest_configure_exists() -> None:
 
 
 def test_pytest_sessionfinish_exists() -> None:
-    """pytest_sessionfinish hook stub must exist and be callable."""
-    assert callable(plugin.pytest_sessionfinish)
+    """pytest_sessionfinish hook must exist on AgentDigestPlugin and be callable."""
+    assert callable(plugin.AgentDigestPlugin.pytest_sessionfinish)
 
 
 def test_hooks_exposed_from_package() -> None:
-    """All hooks must be re-exported from the top-level package."""
+    """Module-level hooks must be re-exported from the top-level package."""
     import pytest_agent_digest as pkg
 
     assert callable(pkg.pytest_addoption)
     assert callable(pkg.pytest_configure)
-    assert callable(pkg.pytest_sessionfinish)
 
 
 def test_pytest_addoption_accepts_parser(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]

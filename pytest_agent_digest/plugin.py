@@ -14,8 +14,9 @@ class AgentDigestPlugin:
     """
     Internal plugin class that holds the per-session state.
 
-    Registered by `pytest_configure` so that `pytest_runtest_logreport` can access the shared
-    `~pytest_agent_digest.collector.ReportCollector` without a global.
+    Registered by `pytest_configure` so that `pytest_runtest_logreport` and
+    `pytest_sessionfinish` share the same `~pytest_agent_digest.collector.ReportCollector`
+    without a global.
     """
 
     def __init__(self) -> None:
@@ -30,6 +31,34 @@ class AgentDigestPlugin:
             report: The test report for the current phase.
         """
         self.collector.add(report)
+
+    def pytest_sessionfinish(self, session: pytest.Session, exitstatus: int) -> None:
+        """
+        Finalize the digest at the end of the test session.
+
+        When ``term`` mode is active, renders the Markdown digest and prints it to stdout.
+        When ``file`` mode is active, writes the Markdown digest to disk and prints a confirmation line.
+        Both modes may be active simultaneously.
+
+        Args:
+            session: The pytest session object.
+            exitstatus: The exit status code for the session.
+        """
+        config = session.config
+        modes = get_output_modes(config)
+        if not modes:
+            return
+
+        report = render_report(self.collector, verbose=config.option.verbose, tb_style=config.option.tbstyle)
+
+        if "term" in modes:
+            print(report, end="")
+
+        if "file" in modes:
+            path = get_report_path(config)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(report, encoding="utf-8")
+            print(f"Agent digest written to {path}")
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -84,41 +113,6 @@ def pytest_configure(config: pytest.Config) -> None:
         tr = config.pluginmanager.get_plugin("terminalreporter")
         if tr is not None:
             config.pluginmanager.unregister(tr)
-
-
-def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
-    """
-    Finalize the digest at the end of the test session.
-
-    When ``term`` mode is active, renders the Markdown digest and prints it to stdout.
-    When ``file`` mode is active, writes the Markdown digest to disk and prints a confirmation line.
-    Both modes may be active simultaneously.
-
-    Args:
-        session: The pytest session object.
-        exitstatus: The exit status code for the session.
-    """
-    config = session.config
-    modes = get_output_modes(config)
-    if not modes:
-        return
-
-    agent_plugin: AgentDigestPlugin | None = config.pluginmanager.get_plugin(_PLUGIN_NAME)
-    if agent_plugin is None:
-        return
-
-    verbose = getattr(config.option, "verbose", 0)
-    tb_style = getattr(config.option, "tbstyle", "short")
-    report = render_report(agent_plugin.collector, verbose=verbose, tb_style=tb_style)
-
-    if "term" in modes:
-        print(report, end="")
-
-    if "file" in modes:
-        path = get_report_path(config)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(report, encoding="utf-8")
-        print(f"Agent digest written to {path}")
 
 
 def get_output_modes(config: pytest.Config) -> set[str]:
