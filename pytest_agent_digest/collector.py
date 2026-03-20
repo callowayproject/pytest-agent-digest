@@ -143,6 +143,24 @@ class ReportCollector:
         return "failed"
 
     @staticmethod
+    def _longrepr_reason(longrepr: object) -> str:
+        """
+        Extract and ANSI-strip a reason string from a longrepr value.
+
+        Skipped reports store ``longrepr`` as a ``(filename, lineno, reason)`` tuple;
+        all other reports store it as a string-like object.
+
+        Args:
+            longrepr: The raw ``report.longrepr`` value (tuple or str-like).
+
+        Returns:
+            A plain-text reason string.
+        """
+        if isinstance(longrepr, tuple):
+            return strip_ansi(str(longrepr[2]))
+        return strip_ansi(str(longrepr))
+
+    @staticmethod
     def _extract_longrepr(report: pytest.TestReport) -> str | None:
         """
         Extract and ANSI-strip the longrepr from *report*.
@@ -153,13 +171,9 @@ class ReportCollector:
         Returns:
             A plain-text longrepr string, or `None` if absent.
         """
-        longrepr = report.longrepr
-        if longrepr is None:
+        if report.longrepr is None:
             return None
-        if isinstance(longrepr, tuple):
-            # Skipped reports store (filename, lineno, reason)
-            return strip_ansi(str(longrepr[2]))
-        return strip_ansi(str(longrepr))
+        return ReportCollector._longrepr_reason(report.longrepr)
 
     @staticmethod
     def _extract_skip_reason(report: pytest.TestReport, outcome: str) -> str | None:
@@ -175,7 +189,6 @@ class ReportCollector:
         """
         if outcome != "skipped":
             return None
-        longrepr = report.longrepr
-        if isinstance(longrepr, tuple):
-            return strip_ansi(str(longrepr[2]))
-        return strip_ansi(str(longrepr)) if longrepr is not None else None
+        if report.longrepr is None:
+            return None
+        return ReportCollector._longrepr_reason(report.longrepr)

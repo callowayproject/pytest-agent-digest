@@ -10,7 +10,6 @@ from pytest_agent_digest.plugin import (
     get_report_path,
     pytest_addoption,
     pytest_configure,
-    pytest_sessionfinish,
 )
 
 __version__ = "0.1.0"
@@ -21,5 +20,4 @@ __all__ = [
     "get_report_path",
     "pytest_addoption",
     "pytest_configure",
-    "pytest_sessionfinish",
 ]
