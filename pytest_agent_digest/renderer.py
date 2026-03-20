@@ -82,7 +82,7 @@ def _failure_entry_lines(result: TestResult, tb_style: str) -> list[str]:
         "",
         f"### {result.node_id}",
         "",
-        f"**Status:** {_STATUS_LABEL[result.outcome]}",
+        f"**Status:** {_STATUS_LABEL.get(result.outcome, result.outcome.upper())}",
         f"**Duration:** {result.duration:.2f}s",
     ]
     if tb_style != "no" and result.longrepr:
