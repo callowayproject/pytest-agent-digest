@@ -76,7 +76,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help=(
             "Generate Agent-friendly Markdown digest. Use 'term' for stdout, "
             "'file' for file output. Can be passed twice."
-        )
+        ),
     )
     parser.addoption(
         "--agent-digest-file",

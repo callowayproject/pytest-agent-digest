@@ -46,11 +46,12 @@ def run_pytest(extra_args: list[str], cwd: Path) -> str:
     Returns:
         Combined stdout and stderr as a single string.
     """
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [sys.executable, "-m", "pytest", *extra_args],
         cwd=cwd,
         capture_output=True,
         text=True,
+        check=False,
     )
     return result.stdout + result.stderr
 

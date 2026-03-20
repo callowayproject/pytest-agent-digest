@@ -100,6 +100,7 @@ class TestGetOutputModes:
 
 class TestGetReportPath:
     """Test the get_report_path function."""
+
     def test_cli_value_takes_precedence(self) -> None:
         """CLI --agent-digest-file takes precedence and returns Path of that value."""
         config = _make_config(agent_digest_file="my-report.md")
