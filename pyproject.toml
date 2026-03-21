@@ -25,7 +25,7 @@ classifiers = [
 keywords = ["pytest", "agent", "AI", "LLM", "report"]
 dynamic = ["version"]
 license = { file = "LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "pytest>=7.0",
 ]
