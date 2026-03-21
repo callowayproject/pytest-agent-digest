@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 (2026-03-21)
+
+[Compare the full difference.](https://github.com/callowayproject/pytest-agent-digest/compare/0.3.0...0.3.1)
+
+### Fixes
+
+- Fix Lower Python version requirement to 3.9 in pyproject.toml. [dc9e97b](https://github.com/callowayproject/pytest-agent-digest/commit/dc9e97b9a42ecca2769810ec9f70508c59b6a412)
+
 ## 0.3.0 (2026-03-21)
 
 [Compare the full difference.](https://github.com/callowayproject/pytest-agent-digest/compare/0.2.0...0.3.0)
