@@ -44,7 +44,9 @@ def _skipped(
 
 def _xfailed(node_id: str = "tests/test_foo.py::test_xfail", duration: float = 0.1) -> TestResult:
     """Build an xfailed TestResult."""
-    return TestResult(node_id=node_id, outcome="xfailed", longrepr="expected failure", duration=duration, skip_reason=None)
+    return TestResult(
+        node_id=node_id, outcome="xfailed", longrepr="expected failure", duration=duration, skip_reason=None
+    )
 
 
 def _xpassed(node_id: str = "tests/test_foo.py::test_xpass", duration: float = 0.1) -> TestResult:
@@ -180,7 +182,9 @@ class TestSkippedSection:
     def test_skipped_entry_format(self) -> None:
         """Skipped entries are formatted as '- <node_id>: <skip_reason>'."""
         node_id = "tests/test_foo.py::test_skip"
-        result = render_report(_make_collector(_skipped(node_id=node_id, skip_reason="not ready")), verbose=False, tb_style="short")
+        result = render_report(
+            _make_collector(_skipped(node_id=node_id, skip_reason="not ready")), verbose=False, tb_style="short"
+        )
         assert f"- {node_id}: not ready" in result
 
 

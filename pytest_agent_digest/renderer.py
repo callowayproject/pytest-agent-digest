@@ -38,20 +38,20 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
     # ------------------------------------------------------------------
     failures = [r for r in collector.results if r.outcome in {"failed", "xpassed"}]
     if failures:
-        lines: list[str] = ["## Failures"]
+        failure_lines: list[str] = ["## Failures"]
         for result in failures:
-            lines.extend(_failure_entry_lines(result, tb_style))
-        sections.append("\n".join(lines))
+            failure_lines.extend(_failure_entry_lines(result, tb_style))
+        sections.append("\n".join(failure_lines))
 
     # ------------------------------------------------------------------
     # Skipped section
     # ------------------------------------------------------------------
     skipped = [r for r in collector.results if r.outcome == "skipped"]
     if skipped:
-        lines = ["## Skipped", ""]
+        skipped_lines: list[str] = ["## Skipped", ""]
         for result in skipped:
-            lines.append(f"- {result.node_id}: {result.skip_reason}")
-        sections.append("\n".join(lines))
+            skipped_lines.append(f"- {result.node_id}: {result.skip_reason}")
+        sections.append("\n".join(skipped_lines))
 
     # ------------------------------------------------------------------
     # Passes section (verbose only)
@@ -59,10 +59,10 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
     if verbose:
         passed = [r for r in collector.results if r.outcome == "passed"]
         if passed:
-            lines = ["## Passes", ""]
+            passed_lines: list[str] = ["## Passes", ""]
             for result in passed:
-                lines.append(f"- {result.node_id}")
-            sections.append("\n".join(lines))
+                passed_lines.append(f"- {result.node_id}")
+            sections.append("\n".join(passed_lines))
 
     return "\n\n".join(sections) + "\n"
 
@@ -82,7 +82,7 @@ def _failure_entry_lines(result: TestResult, tb_style: str) -> list[str]:
         "",
         f"### {result.node_id}",
         "",
-        f"**Status:** {_STATUS_LABEL[result.outcome]}",
+        f"**Status:** {_STATUS_LABEL.get(result.outcome, result.outcome.upper())}",
         f"**Duration:** {result.duration:.2f}s",
     ]
     if tb_style != "no" and result.longrepr:
