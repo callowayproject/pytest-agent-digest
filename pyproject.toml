@@ -6,13 +6,15 @@ build-backend = "hatchling.build"
 name = "pytest-agent-digest"
 description = "A Pytest plugin to generate a Markdown report for AI Agents"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Environment :: Plugins",
     "Framework :: Pytest",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
