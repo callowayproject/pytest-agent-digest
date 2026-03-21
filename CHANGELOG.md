@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 (2026-03-21)
+
+[Compare the full difference.](https://github.com/callowayproject/pytest-agent-digest/compare/0.2.0...0.3.0)
+
+### Other
+
+- Expand Python version matrix to include 3.9 and 3.10, update project status to Beta, and adjust supported Python classifiers. [4214619](https://github.com/callowayproject/pytest-agent-digest/commit/4214619cb5847aa6836353ffa85d093aea19435a)
+
 ## 0.2.0 (2026-03-21)
 
 [Compare the full difference.](https://github.com/callowayproject/pytest-agent-digest/compare/0.1.0...0.2.0)

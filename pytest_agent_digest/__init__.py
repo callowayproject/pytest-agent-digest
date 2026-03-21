@@ -12,7 +12,7 @@ from pytest_agent_digest.plugin import (
     pytest_configure,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "AgentDigestPlugin",
