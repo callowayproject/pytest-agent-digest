@@ -58,21 +58,9 @@ test = [
     "pre-commit",
 ]
 docs = [
-    "mkdocs-git-committers-plugin",
-#    "mkdocs>=1.4.3",
-    "mkdocs-git-revision-date-localized-plugin",
-    "mkdocs-material>=9.1.0",
-    "markdown-customblocks",
-    "mkdocs-gen-files>=0.5.0",
-    "mkdocs-click",
     "griffe-pydantic",
     "python-frontmatter",
-    "mkdocs-git-authors-plugin",
-    "mkdocs-literate-nav>=0.6.0",
     "mkdocstrings[python]",
-    "mdx-truly-sane-lists",
-    "mkdocs-section-index>=0.3.5",
-    "mkdocs-include-markdown-plugin",
     "zensical",
 ]
 
