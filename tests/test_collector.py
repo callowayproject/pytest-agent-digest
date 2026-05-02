@@ -1,6 +1,7 @@
 """Tests for the ReportCollector and TestResult (Ticket 3)."""
 
 import warnings
+from typing import Optional
 from unittest.mock import MagicMock
 
 import pytest
@@ -49,7 +50,7 @@ def _make_report(
     longrepr: object = None,
     duration: float = 0.1,
     node_id: str = "test_mod.py::test_foo",
-    wasxfail: str | None = None,
+    wasxfail: Optional[str] = None,
 ) -> MagicMock:
     """Build a minimal mock pytest.TestReport."""
     report = MagicMock(spec=pytest.TestReport)

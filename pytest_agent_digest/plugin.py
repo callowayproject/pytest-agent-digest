@@ -2,6 +2,7 @@
 
 import warnings
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -38,7 +39,7 @@ class AgentDigestPlugin:
         warning_message: warnings.WarningMessage,
         when: str,
         nodeid: str,
-        location: tuple[str, int, str] | None,
+        location: Optional[tuple[str, int, str]],
     ) -> None:
         """
         Forward each recorded warning to the collector.

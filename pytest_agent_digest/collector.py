@@ -4,6 +4,7 @@ import re
 import warnings
 from collections import Counter
 from dataclasses import dataclass
+from typing import Optional
 
 import pytest
 
@@ -37,7 +38,7 @@ class WarningRecord:
     category: str
     nodeid: str
     when: str
-    location: tuple[str, int, str] | None
+    location: Optional[tuple[str, int, str]]
 
 
 @dataclass
@@ -57,9 +58,9 @@ class TestResult:
 
     node_id: str
     outcome: str
-    longrepr: str | None
+    longrepr: Optional[str]
     duration: float
-    skip_reason: str | None
+    skip_reason: Optional[str]
 
 
 class ReportCollector:
@@ -124,7 +125,7 @@ class ReportCollector:
         warning_message: warnings.WarningMessage,
         when: str,
         nodeid: str,
-        location: tuple[str, int, str] | None,
+        location: Optional[tuple[str, int, str]],
     ) -> None:
         """
         Capture a pytest warning and append a `WarningRecord`.
@@ -210,7 +211,7 @@ class ReportCollector:
         return strip_ansi(str(longrepr))
 
     @staticmethod
-    def _extract_longrepr(report: pytest.TestReport) -> str | None:
+    def _extract_longrepr(report: pytest.TestReport) -> Optional[str]:
         """
         Extract and ANSI-strip the longrepr from *report*.
 
@@ -225,7 +226,7 @@ class ReportCollector:
         return ReportCollector._longrepr_reason(report.longrepr)
 
     @staticmethod
-    def _extract_skip_reason(report: pytest.TestReport, outcome: str) -> str | None:
+    def _extract_skip_reason(report: pytest.TestReport, outcome: str) -> Optional[str]:
         """
         Return the skip reason for skipped tests, else `None`.
 

@@ -1,6 +1,7 @@
 """Tests for the Markdown renderer (Ticket 4)."""
 
 import pytest
+from typing import Optional
 
 from pytest_agent_digest.collector import ReportCollector, TestResult, WarningRecord, strip_ansi
 from pytest_agent_digest.renderer import render_report
@@ -10,7 +11,7 @@ from pytest_agent_digest.renderer import render_report
 # ---------------------------------------------------------------------------
 
 
-def _make_collector(*results: TestResult, warnings: list[WarningRecord] | None = None) -> ReportCollector:
+def _make_collector(*results: TestResult, warnings: Optional[list[WarningRecord]] = None) -> ReportCollector:
     """Build a ReportCollector pre-populated with the given TestResult objects."""
     collector = ReportCollector()
     collector.results = list(results)
@@ -24,7 +25,7 @@ def _warning(
     category: str = "DeprecationWarning",
     nodeid: str = "tests/test_foo.py::test_bar",
     when: str = "runtest",
-    location: tuple[str, int, str] | None = None,
+    location: Optional[tuple[str, int, str]] = None,
 ) -> WarningRecord:
     """Build a WarningRecord for renderer tests."""
     return WarningRecord(message=message, category=category, nodeid=nodeid, when=when, location=location)
@@ -38,7 +39,7 @@ def _passed(node_id: str = "tests/test_foo.py::test_pass", duration: float = 0.1
 def _failed(
     node_id: str = "tests/test_foo.py::test_fail",
     duration: float = 0.5,
-    longrepr: str | None = "AssertionError: assert 1 == 2",
+    longrepr: Optional[str] = "AssertionError: assert 1 == 2",
 ) -> TestResult:
     """Build a failed TestResult."""
     return TestResult(node_id=node_id, outcome="failed", longrepr=longrepr, duration=duration, skip_reason=None)
