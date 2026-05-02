@@ -1,8 +1,10 @@
 """Test result collector for pytest-agent-digest."""
 
 import re
+import warnings
 from collections import Counter
 from dataclasses import dataclass
+from typing import Optional
 
 import pytest
 
@@ -21,6 +23,25 @@ def strip_ansi(text: str) -> str:
 
 
 @dataclass
+class WarningRecord:
+    """Represents a single warning captured during a pytest session.
+
+    Attributes:
+        message: The warning message text.
+        category: The warning category class name (e.g. ``"DeprecationWarning"``).
+        nodeid: The pytest node ID that triggered the warning, or ``""`` for session-level warnings.
+        when: The phase when the warning was recorded (``"config"``, ``"collect"``, or ``"runtest"``).
+        location: A ``(filename, lineno, function)`` tuple identifying the warning site, or ``None``.
+    """
+
+    message: str
+    category: str
+    nodeid: str
+    when: str
+    location: Optional[tuple[str, int, str]]
+
+
+@dataclass
 class TestResult:
     """Represents a single test outcome captured during a pytest session.
 
@@ -33,11 +54,13 @@ class TestResult:
         skip_reason: Human-readable skip reason for skipped tests; `None` otherwise.
     """
 
+    __test__ = False
+
     node_id: str
     outcome: str
-    longrepr: str | None
+    longrepr: Optional[str]
     duration: float
-    skip_reason: str | None
+    skip_reason: Optional[str]
 
 
 class ReportCollector:
@@ -49,8 +72,9 @@ class ReportCollector:
     """
 
     def __init__(self) -> None:
-        """Initialize with an empty result list."""
+        """Initialize with empty result and warning lists."""
         self.results: list[TestResult] = []
+        self.warnings: list[WarningRecord] = []
 
     def add(self, report: pytest.TestReport) -> None:
         """
@@ -93,6 +117,32 @@ class ReportCollector:
                 longrepr=longrepr,
                 duration=report.duration,
                 skip_reason=skip_reason,
+            )
+        )
+
+    def add_warning(
+        self,
+        warning_message: warnings.WarningMessage,
+        when: str,
+        nodeid: str,
+        location: Optional[tuple[str, int, str]],
+    ) -> None:
+        """
+        Capture a pytest warning and append a `WarningRecord`.
+
+        Args:
+            warning_message: The ``warnings.WarningMessage`` instance from the hook.
+            when: The phase when the warning was recorded (``"config"``, ``"collect"``, or ``"runtest"``).
+            nodeid: The node ID of the test that triggered the warning, or ``""`` for session-level warnings.
+            location: A ``(filename, lineno, function)`` tuple, or ``None``.
+        """
+        self.warnings.append(
+            WarningRecord(
+                message=str(warning_message.message),
+                category=warning_message.category.__name__,
+                nodeid=nodeid,
+                when=when,
+                location=location,
             )
         )
 
@@ -161,7 +211,7 @@ class ReportCollector:
         return strip_ansi(str(longrepr))
 
     @staticmethod
-    def _extract_longrepr(report: pytest.TestReport) -> str | None:
+    def _extract_longrepr(report: pytest.TestReport) -> Optional[str]:
         """
         Extract and ANSI-strip the longrepr from *report*.
 
@@ -176,7 +226,7 @@ class ReportCollector:
         return ReportCollector._longrepr_reason(report.longrepr)
 
     @staticmethod
-    def _extract_skip_reason(report: pytest.TestReport, outcome: str) -> str | None:
+    def _extract_skip_reason(report: pytest.TestReport, outcome: str) -> Optional[str]:
         """
         Return the skip reason for skipped tests, else `None`.
 

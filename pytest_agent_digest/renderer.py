@@ -16,7 +16,8 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
 
     Args:
         collector: The populated ``ReportCollector`` instance.
-        verbose: If ``True``, include a ``## Passes`` section listing each passed test.
+        verbose: Verbosity level (``0`` = normal, ``1`` = verbose). When non-zero,
+            includes a ``## Passes`` section listing each passed test.
         tb_style: The pytest ``--tb`` style value.  When ``"no"``, traceback
             code blocks are omitted from failure entries.
 
@@ -31,6 +32,9 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
     # ------------------------------------------------------------------
     counts = collector.counts
     summary_parts = [f"{counts[o]} {o}" for o in _OUTCOME_ORDER if o in counts]
+    if collector.warnings:
+        n = len(collector.warnings)
+        summary_parts.append(f"{n} warning{'s' if n != 1 else ''}")
     sections.append(", ".join(summary_parts))
 
     # ------------------------------------------------------------------
@@ -44,13 +48,18 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
         sections.append("\n".join(failure_lines))
 
     # ------------------------------------------------------------------
+    # Warnings section
+    # ------------------------------------------------------------------
+    if collector.warnings:
+        sections.append(_warnings_section(collector))
+
+    # ------------------------------------------------------------------
     # Skipped section
     # ------------------------------------------------------------------
     skipped = [r for r in collector.results if r.outcome == "skipped"]
     if skipped:
         skipped_lines: list[str] = ["## Skipped", ""]
-        for result in skipped:
-            skipped_lines.append(f"- {result.node_id}: {result.skip_reason}")
+        skipped_lines.extend(f"- {r.node_id}: {r.skip_reason}" for r in skipped)
         sections.append("\n".join(skipped_lines))
 
     # ------------------------------------------------------------------
@@ -60,11 +69,35 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
         passed = [r for r in collector.results if r.outcome == "passed"]
         if passed:
             passed_lines: list[str] = ["## Passes", ""]
-            for result in passed:
-                passed_lines.append(f"- {result.node_id}")
+            passed_lines.extend(f"- {r.node_id}" for r in passed)
             sections.append("\n".join(passed_lines))
 
     return "\n\n".join(sections) + "\n"
+
+
+def _warnings_section(collector: ReportCollector) -> str:
+    """
+    Build the ``## Warnings`` section string.
+
+    Args:
+        collector: The populated ``ReportCollector`` instance.
+
+    Returns:
+        A Markdown string for the warnings section (no trailing newline).
+    """
+    lines: list[str] = ["## Warnings", ""]
+    for w in collector.warnings:
+        if w.nodeid:
+            source = w.nodeid
+        elif w.location:
+            source = f"{w.location[0]}:{w.location[1]}"
+        else:
+            source = ""
+        if source:
+            lines.append(f"- [{w.when}] {source}: {w.category}: {w.message}")
+        else:
+            lines.append(f"- [{w.when}] {w.category}: {w.message}")
+    return "\n".join(lines)
 
 
 def _failure_entry_lines(result: TestResult, tb_style: str) -> list[str]:
