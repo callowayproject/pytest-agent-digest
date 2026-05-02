@@ -1,5 +1,66 @@
 # Changelog
 
+## 0.3.2 (2026-05-02)
+
+[Compare the full difference.](https://github.com/callowayproject/pytest-agent-digest/compare/0.3.1...0.3.2)
+
+### New
+
+- Add warning support to ReportCollector and renderer. [a0ebb0c](https://github.com/callowayproject/pytest-agent-digest/commit/a0ebb0c37fd947735c3979de05632468275a8da5)
+
+- Add `id-token: write` permission to publish-docs workflow. [65619e1](https://github.com/callowayproject/pytest-agent-digest/commit/65619e177952493b6cfad4002b7ba835e03882d9)
+
+### Other
+
+- Bump the github-actions group across 1 directory with 3 updates. [03d52c6](https://github.com/callowayproject/pytest-agent-digest/commit/03d52c602e475bfdf29bce470b04318e1fd68e48)
+
+  Bumps the github-actions group with 3 updates in the / directory: [actions/upload-pages-artifact](https://github.com/actions/upload-pages-artifact), [actions/deploy-pages](https://github.com/actions/deploy-pages) and [softprops/action-gh-release](https://github.com/softprops/action-gh-release).
+
+  Updates `actions/upload-pages-artifact` from 4 to 5
+
+  - [Release notes](https://github.com/actions/upload-pages-artifact/releases)
+  - [Commits](https://github.com/actions/upload-pages-artifact/compare/v4...v5)
+
+  Updates `actions/deploy-pages` from 4 to 5
+
+  - [Release notes](https://github.com/actions/deploy-pages/releases)
+  - [Commits](https://github.com/actions/deploy-pages/compare/v4...v5)
+
+  Updates `softprops/action-gh-release` from 2 to 3
+
+  - [Release notes](https://github.com/softprops/action-gh-release/releases)
+  - [Changelog](https://github.com/softprops/action-gh-release/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/softprops/action-gh-release/compare/v2...v3)
+
+  ______________________________________________________________________
+
+  **updated-dependencies:** - dependency-name: actions/upload-pages-artifact
+  dependency-version: '5'
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+  dependency-group: github-actions
+
+  **signed-off-by:** dependabot[bot] <support@github.com>
+
+- [pre-commit.ci] pre-commit autoupdate. [53a5eee](https://github.com/callowayproject/pytest-agent-digest/commit/53a5eee98142f00ac7479375b10981e57fd11e47)
+
+  **updates:** - [github.com/astral-sh/ruff-pre-commit: v0.15.6 → v0.15.12](https://github.com/astral-sh/ruff-pre-commit/compare/v0.15.6...v0.15.12)
+
+- Replace type union syntax with `Optional` for Python 3.9 compatibility. [f69ee72](https://github.com/callowayproject/pytest-agent-digest/commit/f69ee72bc4951a5860da367155bd438f97acdde7)
+
+- Include warning phase in rendered output and fix verbose docstring. [1bd2275](https://github.com/callowayproject/pytest-agent-digest/commit/1bd2275e01543dfe6e12cc73b3bee65647271a9e)
+
+  Each warning entry in ## Warnings now shows its phase prefix (e.g. [runtest],
+  [collect], [config]) so AI agents can distinguish test-phase warnings from
+  configuration-phase warnings. Also corrects the render_report docstring to
+  describe verbose as an int verbosity level rather than a bool.
+
+  **co-authored-by:** Claude Sonnet 4.6 <noreply@anthropic.com>
+
+### Updates
+
+- Update dependencies. [faccdd2](https://github.com/callowayproject/pytest-agent-digest/commit/faccdd2e4f01b597c28a04cce52a3fc586bc09a8)
+
 ## 0.3.1 (2026-03-21)
 
 [Compare the full difference.](https://github.com/callowayproject/pytest-agent-digest/compare/0.3.0...0.3.1)
