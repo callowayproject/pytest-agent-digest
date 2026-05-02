@@ -1,6 +1,7 @@
 """Test result collector for pytest-agent-digest."""
 
 import re
+import warnings
 from collections import Counter
 from dataclasses import dataclass
 
@@ -21,6 +22,25 @@ def strip_ansi(text: str) -> str:
 
 
 @dataclass
+class WarningRecord:
+    """Represents a single warning captured during a pytest session.
+
+    Attributes:
+        message: The warning message text.
+        category: The warning category class name (e.g. ``"DeprecationWarning"``).
+        nodeid: The pytest node ID that triggered the warning, or ``""`` for session-level warnings.
+        when: The phase when the warning was recorded (``"config"``, ``"collect"``, or ``"runtest"``).
+        location: A ``(filename, lineno, function)`` tuple identifying the warning site, or ``None``.
+    """
+
+    message: str
+    category: str
+    nodeid: str
+    when: str
+    location: tuple[str, int, str] | None
+
+
+@dataclass
 class TestResult:
     """Represents a single test outcome captured during a pytest session.
 
@@ -32,6 +52,8 @@ class TestResult:
         duration: Test duration in seconds.
         skip_reason: Human-readable skip reason for skipped tests; `None` otherwise.
     """
+
+    __test__ = False
 
     node_id: str
     outcome: str
@@ -49,8 +71,9 @@ class ReportCollector:
     """
 
     def __init__(self) -> None:
-        """Initialize with an empty result list."""
+        """Initialize with empty result and warning lists."""
         self.results: list[TestResult] = []
+        self.warnings: list[WarningRecord] = []
 
     def add(self, report: pytest.TestReport) -> None:
         """
@@ -93,6 +116,32 @@ class ReportCollector:
                 longrepr=longrepr,
                 duration=report.duration,
                 skip_reason=skip_reason,
+            )
+        )
+
+    def add_warning(
+        self,
+        warning_message: warnings.WarningMessage,
+        when: str,
+        nodeid: str,
+        location: tuple[str, int, str] | None,
+    ) -> None:
+        """
+        Capture a pytest warning and append a `WarningRecord`.
+
+        Args:
+            warning_message: The ``warnings.WarningMessage`` instance from the hook.
+            when: The phase when the warning was recorded (``"config"``, ``"collect"``, or ``"runtest"``).
+            nodeid: The node ID of the test that triggered the warning, or ``""`` for session-level warnings.
+            location: A ``(filename, lineno, function)`` tuple, or ``None``.
+        """
+        self.warnings.append(
+            WarningRecord(
+                message=str(warning_message.message),
+                category=warning_message.category.__name__,
+                nodeid=nodeid,
+                when=when,
+                location=location,
             )
         )
 

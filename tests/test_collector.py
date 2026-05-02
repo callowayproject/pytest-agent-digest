@@ -1,10 +1,11 @@
 """Tests for the ReportCollector and TestResult (Ticket 3)."""
 
+import warnings
 from unittest.mock import MagicMock
 
 import pytest
 
-from pytest_agent_digest.collector import ReportCollector, TestResult, strip_ansi
+from pytest_agent_digest.collector import ReportCollector, TestResult, WarningRecord, strip_ansi
 
 # ---------------------------------------------------------------------------
 # strip_ansi
@@ -90,7 +91,7 @@ class TestTestResultDataclass:
         assert result.node_id == "test_mod.py::test_foo"
         assert result.outcome == "passed"
         assert result.longrepr is None
-        assert result.duration == 0.5
+        assert result.duration == 0.5  # noqa: RUF069
         assert result.skip_reason is None
 
 
@@ -109,7 +110,7 @@ class TestReportCollectorAdd:
         collector.add(report)
         assert len(collector.results) == 1
         assert collector.results[0].outcome == "passed"
-        assert collector.results[0].duration == 0.2
+        assert collector.results[0].duration == 0.2  # noqa: RUF069
 
     def test_failed_report_classified_as_failed(self) -> None:
         """A call-phase failed report is stored as 'failed'."""
@@ -261,3 +262,106 @@ class TestReportCollectorHasFailures:
         report.longrepr = ("f.py", 1, "Skipped: x")
         collector.add(report)
         assert collector.has_failures is False
+
+
+# ---------------------------------------------------------------------------
+# Helpers for warning tests
+# ---------------------------------------------------------------------------
+
+
+def _make_warning_message(
+    message: str = "use new API",
+    category: type = DeprecationWarning,
+) -> warnings.WarningMessage:
+    """Build a minimal mock warnings.WarningMessage."""
+    wm = MagicMock(spec=warnings.WarningMessage)
+    wm.message = category(message)
+    wm.category = category
+    return wm
+
+
+# ---------------------------------------------------------------------------
+# WarningRecord dataclass
+# ---------------------------------------------------------------------------
+
+
+class TestWarningRecord:
+    """WarningRecord dataclass fields."""
+
+    def test_has_required_fields(self) -> None:
+        """WarningRecord can be constructed with all required fields."""
+        record = WarningRecord(
+            message="use new API",
+            category="DeprecationWarning",
+            nodeid="tests/test_foo.py::test_bar",
+            when="runtest",
+            location=("path/to/file.py", 42, "test_bar"),
+        )
+        assert record.message == "use new API"
+        assert record.category == "DeprecationWarning"
+        assert record.nodeid == "tests/test_foo.py::test_bar"
+        assert record.when == "runtest"
+        assert record.location == ("path/to/file.py", 42, "test_bar")
+
+    def test_location_can_be_none(self) -> None:
+        """WarningRecord accepts None for location."""
+        record = WarningRecord(
+            message="msg",
+            category="UserWarning",
+            nodeid="",
+            when="config",
+            location=None,
+        )
+        assert record.location is None
+
+
+# ---------------------------------------------------------------------------
+# ReportCollector — warnings
+# ---------------------------------------------------------------------------
+
+
+class TestReportCollectorWarnings:
+    """Tests for ReportCollector.add_warning and .warnings."""
+
+    def test_warnings_empty_on_init(self) -> None:
+        """Warnings list starts empty."""
+        assert ReportCollector().warnings == []
+
+    def test_add_warning_stores_record(self) -> None:
+        """add_warning appends a WarningRecord to .warnings."""
+        collector = ReportCollector()
+        wm = _make_warning_message("old API", DeprecationWarning)
+        collector.add_warning(wm, when="runtest", nodeid="tests/test_foo.py::test_bar", location=None)
+        assert len(collector.warnings) == 1
+        record = collector.warnings[0]
+        assert record.message == "old API"
+        assert record.category == "DeprecationWarning"
+        assert record.nodeid == "tests/test_foo.py::test_bar"
+        assert record.when == "runtest"
+
+    def test_multiple_warnings_accumulate(self) -> None:
+        """Each add_warning call appends a new record."""
+        collector = ReportCollector()
+        collector.add_warning(_make_warning_message("w1"), when="runtest", nodeid="t1", location=None)
+        collector.add_warning(_make_warning_message("w2"), when="runtest", nodeid="t2", location=None)
+        assert len(collector.warnings) == 2
+
+    def test_category_name_extracted(self) -> None:
+        """The category class name is stored as a string."""
+        collector = ReportCollector()
+        collector.add_warning(_make_warning_message("msg", UserWarning), when="runtest", nodeid="", location=None)
+        assert collector.warnings[0].category == "UserWarning"
+
+    def test_session_level_warning_empty_nodeid(self) -> None:
+        """Session-level warnings store an empty nodeid."""
+        collector = ReportCollector()
+        collector.add_warning(_make_warning_message(), when="config", nodeid="", location=("cfg.py", 1, "<module>"))
+        assert not collector.warnings[0].nodeid
+        assert collector.warnings[0].when == "config"
+
+    def test_location_stored(self) -> None:
+        """The location tuple is stored on the WarningRecord."""
+        collector = ReportCollector()
+        loc = ("path/to/file.py", 42, "test_bar")
+        collector.add_warning(_make_warning_message(), when="runtest", nodeid="", location=loc)
+        assert collector.warnings[0].location == loc

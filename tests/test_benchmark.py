@@ -1,12 +1,9 @@
 """Tests for tools/benchmark_tokens.py."""
 
 import sys
-from io import StringIO
 from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 # Add tools/ to sys.path so we can import benchmark_tokens
 sys.path.insert(0, str(Path(__file__).parent.parent / "tools"))
@@ -17,7 +14,7 @@ def test_run_pytest_returns_string():
     """run_pytest returns a str combining stdout and stderr."""
     fake_result = CompletedProcess(args=[], returncode=0, stdout="hello\n", stderr="warn\n")
     with patch("benchmark_tokens.subprocess.run", return_value=fake_result) as mock_run:
-        result = benchmark_tokens.run_pytest(["--version"], Path("/tmp"))
+        result = benchmark_tokens.run_pytest(["--version"], Path("/tmp"))  # noqa: S108
     assert isinstance(result, str)
     assert "hello" in result
     mock_run.assert_called_once()

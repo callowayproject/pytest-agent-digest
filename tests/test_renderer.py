@@ -2,7 +2,7 @@
 
 import pytest
 
-from pytest_agent_digest.collector import ReportCollector, TestResult, strip_ansi
+from pytest_agent_digest.collector import ReportCollector, TestResult, WarningRecord, strip_ansi
 from pytest_agent_digest.renderer import render_report
 
 # ---------------------------------------------------------------------------
@@ -10,11 +10,24 @@ from pytest_agent_digest.renderer import render_report
 # ---------------------------------------------------------------------------
 
 
-def _make_collector(*results: TestResult) -> ReportCollector:
+def _make_collector(*results: TestResult, warnings: list[WarningRecord] | None = None) -> ReportCollector:
     """Build a ReportCollector pre-populated with the given TestResult objects."""
     collector = ReportCollector()
     collector.results = list(results)
+    if warnings:
+        collector.warnings = list(warnings)
     return collector
+
+
+def _warning(
+    message: str = "use new API",
+    category: str = "DeprecationWarning",
+    nodeid: str = "tests/test_foo.py::test_bar",
+    when: str = "runtest",
+    location: tuple[str, int, str] | None = None,
+) -> WarningRecord:
+    """Build a WarningRecord for renderer tests."""
+    return WarningRecord(message=message, category=category, nodeid=nodeid, when=when, location=location)
 
 
 def _passed(node_id: str = "tests/test_foo.py::test_pass", duration: float = 0.1) -> TestResult:
@@ -88,6 +101,25 @@ class TestSummaryLine:
         assert "xfailed" not in first_line
         assert "xpassed" not in first_line
 
+    def test_single_warning_in_summary(self) -> None:
+        """One warning produces '1 warning' (singular) in the summary."""
+        collector = _make_collector(_passed(), warnings=[_warning()])
+        first_line = render_report(collector, verbose=False, tb_style="short").splitlines()[0]
+        assert "1 warning" in first_line
+        assert "1 warnings" not in first_line
+
+    def test_multiple_warnings_in_summary(self) -> None:
+        """Two warnings produce '2 warnings' (plural) in the summary."""
+        collector = _make_collector(_passed(), warnings=[_warning(), _warning(message="another")])
+        first_line = render_report(collector, verbose=False, tb_style="short").splitlines()[0]
+        assert "2 warnings" in first_line
+
+    def test_warning_count_appended_after_outcomes(self) -> None:
+        """Warning count appears after outcome counts in the summary."""
+        collector = _make_collector(_passed(), _failed(), warnings=[_warning()])
+        first_line = render_report(collector, verbose=False, tb_style="short").splitlines()[0]
+        assert first_line == "1 passed, 1 failed, 1 warning"
+
 
 # ---------------------------------------------------------------------------
 # Failures section
@@ -145,18 +177,18 @@ class TestFailuresSection:
         assert "```" not in result
 
     def test_xpassed_appears_in_failures_section(self) -> None:
-        """xpassed results are included in ## Failures."""
+        """Xpassed results are included in ## Failures."""
         result = render_report(_make_collector(_xpassed()), verbose=False, tb_style="short")
         assert "## Failures" in result
         assert "### tests/test_foo.py::test_xpass" in result
 
     def test_xpassed_status_label(self) -> None:
-        """xpassed results show **Status:** XPASSED."""
+        """Xpassed results show **Status:** XPASSED."""
         result = render_report(_make_collector(_xpassed()), verbose=False, tb_style="short")
         assert "**Status:** XPASSED" in result
 
     def test_xfailed_not_in_failures_section(self) -> None:
-        """xfailed results do not appear in ## Failures (only in summary)."""
+        """Xfailed results do not appear in ## Failures (only in summary)."""
         result = render_report(_make_collector(_xfailed()), verbose=False, tb_style="short")
         assert "## Failures" not in result
 
@@ -219,6 +251,62 @@ class TestPassesSection:
 
 
 # ---------------------------------------------------------------------------
+# Warnings section
+# ---------------------------------------------------------------------------
+
+
+class TestWarningsSection:
+    """## Warnings section appears when warnings exist."""
+
+    def test_warnings_section_absent_when_no_warnings(self) -> None:
+        """## Warnings is absent when the collector has no warnings."""
+        result = render_report(_make_collector(_passed()), verbose=False, tb_style="short")
+        assert "## Warnings" not in result
+
+    def test_warnings_section_present_when_warnings_exist(self) -> None:
+        """## Warnings is present when there is at least one warning."""
+        collector = _make_collector(_passed(), warnings=[_warning()])
+        result = render_report(collector, verbose=False, tb_style="short")
+        assert "## Warnings" in result
+
+    def test_warning_entry_with_nodeid(self) -> None:
+        """Entry format is '- nodeid: Category: message' when nodeid is set."""
+        w = _warning(message="old API", category="DeprecationWarning", nodeid="tests/test_foo.py::test_bar")
+        result = render_report(_make_collector(warnings=[w]), verbose=False, tb_style="short")
+        assert "- tests/test_foo.py::test_bar: DeprecationWarning: old API" in result
+
+    def test_warning_entry_with_location_only(self) -> None:
+        """Entry format is '- file:line: Category: message' when nodeid is empty but location is set."""
+        w = _warning(message="thing", category="UserWarning", nodeid="", location=("src/foo.py", 42, "func"))
+        result = render_report(_make_collector(warnings=[w]), verbose=False, tb_style="short")
+        assert "- src/foo.py:42: UserWarning: thing" in result
+
+    def test_warning_entry_with_neither_nodeid_nor_location(self) -> None:
+        """Entry format is '- Category: message' when nodeid is empty and location is None."""
+        w = _warning(message="cfg issue", category="PendingDeprecationWarning", nodeid="", location=None)
+        result = render_report(_make_collector(warnings=[w]), verbose=False, tb_style="short")
+        assert "- PendingDeprecationWarning: cfg issue" in result
+
+    def test_warnings_section_after_failures(self) -> None:
+        """## Warnings appears after ## Failures in the rendered output."""
+        w = _warning()
+        collector = _make_collector(_failed(), warnings=[w])
+        result = render_report(collector, verbose=False, tb_style="short")
+        failures_pos = result.index("## Failures")
+        warnings_pos = result.index("## Warnings")
+        assert warnings_pos > failures_pos
+
+    def test_warnings_section_before_skipped(self) -> None:
+        """## Warnings appears before ## Skipped in the rendered output."""
+        w = _warning()
+        collector = _make_collector(_skipped(), warnings=[w])
+        result = render_report(collector, verbose=False, tb_style="short")
+        warnings_pos = result.index("## Warnings")
+        skipped_pos = result.index("## Skipped")
+        assert warnings_pos < skipped_pos
+
+
+# ---------------------------------------------------------------------------
 # Formatting rules
 # ---------------------------------------------------------------------------
 
@@ -251,7 +339,7 @@ class TestFormatting:
 
     def test_single_blank_line_between_sections(self) -> None:
         """Sections are separated by exactly one blank line (no double-blank-lines)."""
-        collector = _make_collector(_passed(), _failed(), _skipped())
+        collector = _make_collector(_passed(), _failed(), _skipped(), warnings=[_warning()])
         result = render_report(collector, verbose=True, tb_style="short")
         assert "\n\n\n" not in result
 
@@ -259,6 +347,7 @@ class TestFormatting:
         """An empty session produces no section headings."""
         result = render_report(_make_collector(), verbose=False, tb_style="short")
         assert "## Failures" not in result
+        assert "## Warnings" not in result
         assert "## Skipped" not in result
         assert "## Passes" not in result
 

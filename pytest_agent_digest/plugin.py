@@ -1,5 +1,6 @@
 """pytest plugin hooks for pytest-agent-digest."""
 
+import warnings
 from pathlib import Path
 
 import pytest
@@ -31,6 +32,24 @@ class AgentDigestPlugin:
             report: The test report for the current phase.
         """
         self.collector.add(report)
+
+    def pytest_warning_recorded(
+        self,
+        warning_message: warnings.WarningMessage,
+        when: str,
+        nodeid: str,
+        location: tuple[str, int, str] | None,
+    ) -> None:
+        """
+        Forward each recorded warning to the collector.
+
+        Args:
+            warning_message: The warning message object from the hook.
+            when: The phase when the warning was recorded.
+            nodeid: The node ID of the test that triggered the warning.
+            location: The ``(filename, lineno, function)`` of the warning site.
+        """
+        self.collector.add_warning(warning_message, when, nodeid, location)
 
     def pytest_sessionfinish(self, session: pytest.Session, exitstatus: int) -> None:
         """

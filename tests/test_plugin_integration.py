@@ -221,3 +221,48 @@ def test_term_and_file_both_produce_output(pytester: pytest.Pytester) -> None:  
     assert result.ret == 0
     assert "1 passed" in result.stdout.str()  # term output
     assert (pytester.path / "test-results.md").exists()  # file output
+
+
+# ---------------------------------------------------------------------------
+# Warnings collection
+# ---------------------------------------------------------------------------
+
+
+def test_warnings_section_in_term_output(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """Warnings emitted during a test appear in the ## Warnings section."""
+    pytester.makepyfile("""
+        import warnings
+        def test_with_warning():
+            warnings.warn("old API", DeprecationWarning)
+            assert True
+    """)
+    result = pytester.runpytest("--agent-digest=term")
+    assert result.ret == 0
+    stdout = result.stdout.str()
+    assert "## Warnings" in stdout
+    assert "DeprecationWarning" in stdout
+    assert "old API" in stdout
+    assert "1 warning" in stdout
+
+
+def test_warnings_count_in_summary(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """Warning count appears in the summary line alongside test outcome counts."""
+    pytester.makepyfile("""
+        import warnings
+        def test_a():
+            warnings.warn("w1", UserWarning)
+        def test_b():
+            warnings.warn("w2", UserWarning)
+    """)
+    result = pytester.runpytest("--agent-digest=term")
+    assert result.ret == 0
+    first_line = result.stdout.str().splitlines()[0]
+    assert "warnings" in first_line
+
+
+def test_no_warnings_section_when_no_warnings(pytester: pytest.Pytester) -> None:  # type: ignore[name-defined]
+    """## Warnings section is absent when the test suite emits no warnings."""
+    pytester.makepyfile("def test_clean(): assert True")
+    result = pytester.runpytest("--agent-digest=term")
+    assert result.ret == 0
+    assert "## Warnings" not in result.stdout.str()
