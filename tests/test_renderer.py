@@ -270,22 +270,22 @@ class TestWarningsSection:
         assert "## Warnings" in result
 
     def test_warning_entry_with_nodeid(self) -> None:
-        """Entry format is '- nodeid: Category: message' when nodeid is set."""
+        """Entry format is '- [when] nodeid: Category: message' when nodeid is set."""
         w = _warning(message="old API", category="DeprecationWarning", nodeid="tests/test_foo.py::test_bar")
         result = render_report(_make_collector(warnings=[w]), verbose=False, tb_style="short")
-        assert "- tests/test_foo.py::test_bar: DeprecationWarning: old API" in result
+        assert "- [runtest] tests/test_foo.py::test_bar: DeprecationWarning: old API" in result
 
     def test_warning_entry_with_location_only(self) -> None:
-        """Entry format is '- file:line: Category: message' when nodeid is empty but location is set."""
+        """Entry format is '- [when] file:line: Category: message' when nodeid is empty but location is set."""
         w = _warning(message="thing", category="UserWarning", nodeid="", location=("src/foo.py", 42, "func"))
         result = render_report(_make_collector(warnings=[w]), verbose=False, tb_style="short")
-        assert "- src/foo.py:42: UserWarning: thing" in result
+        assert "- [runtest] src/foo.py:42: UserWarning: thing" in result
 
     def test_warning_entry_with_neither_nodeid_nor_location(self) -> None:
-        """Entry format is '- Category: message' when nodeid is empty and location is None."""
+        """Entry format is '- [when] Category: message' when nodeid is empty and location is None."""
         w = _warning(message="cfg issue", category="PendingDeprecationWarning", nodeid="", location=None)
         result = render_report(_make_collector(warnings=[w]), verbose=False, tb_style="short")
-        assert "- PendingDeprecationWarning: cfg issue" in result
+        assert "- [runtest] PendingDeprecationWarning: cfg issue" in result
 
     def test_warnings_section_after_failures(self) -> None:
         """## Warnings appears after ## Failures in the rendered output."""

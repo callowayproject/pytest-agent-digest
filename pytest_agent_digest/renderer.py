@@ -16,7 +16,8 @@ def render_report(collector: ReportCollector, verbose: int, tb_style: str) -> st
 
     Args:
         collector: The populated ``ReportCollector`` instance.
-        verbose: If ``True``, include a ``## Passes`` section listing each passed test.
+        verbose: Verbosity level (``0`` = normal, ``1`` = verbose). When non-zero,
+            includes a ``## Passes`` section listing each passed test.
         tb_style: The pytest ``--tb`` style value.  When ``"no"``, traceback
             code blocks are omitted from failure entries.
 
@@ -93,9 +94,9 @@ def _warnings_section(collector: ReportCollector) -> str:
         else:
             source = ""
         if source:
-            lines.append(f"- {source}: {w.category}: {w.message}")
+            lines.append(f"- [{w.when}] {source}: {w.category}: {w.message}")
         else:
-            lines.append(f"- {w.category}: {w.message}")
+            lines.append(f"- [{w.when}] {w.category}: {w.message}")
     return "\n".join(lines)
 
 

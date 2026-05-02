@@ -240,6 +240,7 @@ def test_warnings_section_in_term_output(pytester: pytest.Pytester) -> None:  # 
     assert result.ret == 0
     stdout = result.stdout.str()
     assert "## Warnings" in stdout
+    assert "[runtest]" in stdout
     assert "DeprecationWarning" in stdout
     assert "old API" in stdout
     assert "1 warning" in stdout
